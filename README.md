@@ -33,6 +33,12 @@ Once the gazebo world has started up, very soon you will should lift the robot a
 
 To test navigation (experimental, including launching an rviz window):
 
+Setup (once only):
+
+cd ~/navigation_ws ; ./deps && ./rosbuild
+
+Run:
+
 ./navstart
 
 To see the rviz window, run a browser on the same machine, with the URL: http://localhost:8082/vnc_auto.html
