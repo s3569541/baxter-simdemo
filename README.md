@@ -3,8 +3,6 @@ ROS Sim for Baxter + mobility base in VXLab
 
 https://youtu.be/U0TmnjHC2r8
 
-# baxter-sim-demo
-
 Requires install of docker-ce on your platform to build and run container.
 
 Experimental navigation stack on "navigation" branch.
