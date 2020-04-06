@@ -23,6 +23,7 @@ This will start three containers: Simulation platform (vxlab-rosie) in the foreg
 
 In simulation platform:
 
+cd rosie
 ./simstart
 
 To see the gazebo window, run a browser on the same machine, with the URL: http://localhost:8081/vnc_auto.html
@@ -39,6 +40,7 @@ cd ~/navigation_ws ; ./deps && ./rosbuild
 
 Run:
 
+cd ~/rosie
 ./navstart
 
 To see the rviz window, run a browser on the same machine, with the URL: http://localhost:8082/vnc_auto.html
