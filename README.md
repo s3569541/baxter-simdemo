@@ -3,8 +3,6 @@ ROS Sim for Baxter + mobility base in VXLab
 
 https://youtu.be/U0TmnjHC2r8
 
-Once the gazebo world appears, you will need to run ./lift-arms fairly soon, or the arms touching the ground plane causes a bug which tips the robot over
-
 # baxter-sim-demo
 
 Requires install of docker-ce on your platform to build and run container.
@@ -29,13 +27,13 @@ In simulation platform:
 
 ./simstart
 
-After things settle down, use CTRL-Z to put the script in the background, then type:
+To see the gazebo window, run a browser on the same machine, with the URL: http://localhost:8081/vnc_auto.html
+
+Once the gazebo world has started up, very soon you will should lift the robot arms off the floor fairly soon, or the arms touching the ground plane triggers a bug which tips the robot over: Use CTRL-Z, then type "bg" + ENTER, to put the script in the background. Then type:
 
 ./lift-arms
 
-To see the gazebo window, run a browser on the same machine, with the URL: http://localhost:8081/vnc_auto.html
-
-To test navigation stack (including launching an rviz window):
+To test navigation (experimental, including launching an rviz window):
 
 ./navstart
 
