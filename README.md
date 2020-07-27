@@ -8,7 +8,7 @@ ROS Sim for Baxter + mobility base in VXLab
 
 [![Rosie and Blue Navigating in VXLab](https://img.youtube.com/vi/Jtl_j8n0Mf8/0.jpg)](https://www.youtube.com/watch?v=Jtl_j8n0Mf8)
 
-(Recommended branch: blue-mir100)
+(Recommended branch: blue-mir100: https://github.com/ipeakermit/baxter-mobility-base-simdemo/blob/blue-mir100/README.md)
 
 https://youtu.be/U0TmnjHC2r8
 (current master, mostly out of date)
