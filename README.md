@@ -2,10 +2,10 @@
 ROS Sim for Baxter + mobility base in VXLab
 
 https://www.youtube.com/watch?v=Jtl_j8n0Mf8
-(branch:blue-mir100: complex docker deployment with manual startup; documentation is poor)
+(Recommended branch: blue-mir100)
 
 https://youtu.be/U0TmnjHC2r8
-(current master)
+(current master, mostly out of date)
 
 https://www.youtube.com/watch?v=aYiqchH3MK4
 (student project fork at https://github.com/ipeakermit/RobotDeliveryTeam-202006)
