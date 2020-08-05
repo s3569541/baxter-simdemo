@@ -24,7 +24,6 @@ class RosOdomPublisher:
   gps_ekf_odom_pub = rospy.Publisher('/rosie/odom', Odometry)
   tf_br = tf.TransformBroadcaster()
 
-
   publish_odom_tf = True
 
   frame_id = '/odom'
@@ -53,9 +52,6 @@ class RosOdomPublisher:
       self.z = 0
       self.roll = 0
       self.pitch = 0
-      global lastcmdvel
-      # Last time cmdvel was called
-      lastcmdvel = rospy.Time.now()
 
   def publish_odom(self):
       msg = Odometry()
@@ -100,8 +96,10 @@ class RosOdomPublisher:
       if self.publish_odom_tf:
           self.tf_br.sendTransform(pos, ori, msg.header.stamp, msg.child_frame_id, msg.header.frame_id)
 
-global pub
+pub = RosOdomPublisher()
 
+# Last time cmdvel was called
+lastcmdvel = datetime.datetime.now()
 
 # Previous twist message (0 on initialization)
 lasttwist = Twist()
@@ -111,13 +109,13 @@ def mypub_cmdvel(msg):
   twist = msg.twist
   # Calculate elapsed time since last twist in microseconds
   global lastcmdvel
-  newcmdvel = rospy.Time.now()
+  newcmdvel = datetime.datetime.now()
   dt = (newcmdvel - lastcmdvel)
-  nanos = dt.to_nsec()
+  micros = dt.microseconds
   #print 'twist',twist
-  #print 'dt',dt.to_sec(),'new',newcmdvel,'last',lastcmdvel
+  #print 'dt',dt.seconds,'new',newcmdvel,'last',lastcmdvel
   # Optimisation---normally skip intervals where velocity is zero, except to maintain TF every few seconds
-  tf_timeout = dt.to_sec() > 1
+  tf_timeout = dt.seconds > 1
   if tf_timeout:
     rospy.loginfo('TF timeout:')
   if not tf_timeout and lasttwist.linear.x==0 and lasttwist.linear.y==0 and lasttwist.angular.z==0 and twist.linear.x==0 and twist.linear.y==0 and twist.angular.z==0:
@@ -131,31 +129,30 @@ def mypub_cmdvel(msg):
   # Calculate new position in terms of delta-Twist
   #pub.dx = twist.linear.x * 0.4
   #pub.dy = twist.linear.y * 0.4
-  pub.dx = twist.linear.x * 1.0
-  pub.dy = twist.linear.y * 1.0
+  pub.dx = twist.linear.x * 0.4
+  pub.dy = twist.linear.y * 0.4
 
   # MAGIC NUMBER
   #pub.dyaw = twist.angular.z / 1.55
   ######pub.dyaw = twist.angular.z * 0.35
-  pub.dyaw = twist.angular.z * 1.0
+  pub.dyaw = twist.angular.z * 0.4
   #pub.dyaw = twist.angular.z * 1.0
 
-  c1 = (pub.dx * nanos / 1000000000)
-  c2 = (pub.dy * nanos / 1000000000)
+  c1 = (pub.dx * micros / 1000000)
+  c2 = (pub.dy * micros / 1000000)
 
   pub.x = pub.x + c1 * math.cos(pub.yaw) + c2 * math.sin(pub.yaw)
   pub.y = pub.y + c1 * math.sin(pub.yaw) + c2 * math.cos(pub.yaw)
 
   # ROS: yaw increases in an anti-clockwise direction
   # (http://www.ros.org/reps/rep-0103.html)
-  pub.yaw = pub.yaw + pub.dyaw * nanos / 1000000000
+  pub.yaw = pub.yaw + pub.dyaw * micros / 1000000
   #print 'yaw',pub.yaw
   #print 'dx',pub.dx,'dy',pub.dy,'dyaw',pub.dyaw
   #print 'x',pub.x,'y',pub.y,'z',pub.z,'yaw',pub.yaw
   pub.publish_odom()
 
 rospy.init_node('dataspeed_base_odometry', anonymous=False)
-pub = RosOdomPublisher()
 #rospy.Subscriber('/mobility_base/cmd_vel', Twist, mypub_cmdvel)
 rospy.Subscriber('/mobility_base/twist', TwistStamped, mypub_cmdvel)
 #rospy.Subscriber('/mobility_base/imu/data_raw', Imu, mypub_imu)
