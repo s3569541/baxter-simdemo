@@ -39,8 +39,8 @@ RUN apt-get -qq update && \
 
 WORKDIR /root
 # rosie mounted at runtime
-RUN echo 'source ~/rosie/rosenv.bash' >> .bashrc
-RUN echo 'source ~/navigation_ws/devel/setup.bash' >> .bashrc
+RUN echo 'source ~/rosie/rosenv.nav.bash' >> .bashrc
+#RUN echo 'source ~/navigation_ws/devel/setup.bash' >> .bashrc
 
 # Navigation tree --- install prerequisite packages
 ###ADD navigation_ws /root/navigation_ws

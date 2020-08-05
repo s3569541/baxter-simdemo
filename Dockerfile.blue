@@ -1,7 +1,10 @@
-# https://hub.docker.com/r/davetcoleman/baxter_simulator/dockerfile
+########################################################################
+# 
+# Minimal envt to simulate Baxter, Dataspeed Mobility Base and MIR100
+# in single Gazebo session.
+# The minimal requirements in practice work out to be custom drivers, mostly.
 #
-# vicariousinc/baxter-simulator:kinetic
-# Run simulated Baxter in Gazebo
+########################################################################
 
 #FROM osrf/ros:melodic-desktop-full
 FROM ros:melodic-ros-core
@@ -25,6 +28,12 @@ RUN apt-get update && apt -y dist-upgrade
 
 ENV TERM xterm
 
+################
+#
+# Baxter
+#
+################
+
 # Setup catkin workspace
 ENV CATKIN_WS=/root/ws_baxter
 RUN mkdir -p $CATKIN_WS/src
@@ -32,6 +41,9 @@ WORKDIR $CATKIN_WS/src
 
 #COPY baxter_simulator_emarolab.rosinstall baxter_simulator.rosinstall
 COPY baxter_simulator_dougparkarosa.rosinstall baxter_simulator.rosinstall
+#
+# https://hub.docker.com/r/davetcoleman/baxter_simulator/dockerfile
+# vicariousinc/baxter-simulator:kinetic
 
 # Download source code
 RUN wstool init . && \
@@ -78,9 +90,11 @@ RUN catkin config --extend /opt/ros/${ROS_DISTRO} --cmake-args -DCMAKE_BUILD_TYP
 
 #RUN apt-get update && apt -y install ros-melodic-catkin
 
+################
 #
 # Dataspeed mobility base
 #
+################
 
 ENV MB_WS /root/mb_ws/
 WORKDIR $MB_WS/
@@ -119,32 +133,13 @@ RUN source /root/ws_baxter/devel/setup.bash && \
 # VXLab extensions...
 #
 
-#
-# OpenGL + NoVNC (port 6080)
-#
-
 USER root
-#RUN echo "user ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/user
 
-#RUN git clone https://github.com/kanaka/noVNC.git /opt/noVNC && \
-#  cd /opt/noVNC && \
-#  git checkout 6a90803feb124791960e3962e328aa3cfb729aeb && \
-#  ln -s vnc_auto.html index.html
-
+# Not required?
 # noVNC (http server) is on 6080, and the VNC server is on 5900
-EXPOSE 6080 5900
-
-# force repeat COPY
-#COPY etc /etc
-#COPY usr /usr
-
-#ENV DISPLAY :0
+#EXPOSE 6080 5900
 
 WORKDIR /root
-
-#RUN apt -qq update && \
-#    apt install -y ros-melodic-nav2d
-
 
 WORKDIR $CATKIN_WS
 ADD baxter.sh baxter.sh
@@ -154,7 +149,7 @@ ADD baxter.sh baxter.sh
 #ADD vncstart vncstart
 
 # rosie mounted at runtime
-RUN echo 'source ~/rosie/rosenv.bash' >> /root/.bashrc
+RUN echo 'source ~/rosie/rosenv.gazebo.bash' >> /root/.bashrc
 
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
   ros-melodic-teleop-twist-keyboard
@@ -162,9 +157,11 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
   telnet lsof psmisc
 
+################
 #
-# mir_robot
-# 
+# MIR100
+#
+################
 
 # Create ROS workspace
 WORKDIR /root/mir_ws/src
@@ -183,12 +180,11 @@ RUN /bin/bash -c "source /root/mb_ws/devel/setup.bash && \
     catkin init && \
     catkin config --extend /root/mb_ws/devel --install -j 1 -p 1 && \
     catkin_make"
-#
-# Why is this not installed already?!
-RUN apt update && apt install -y \
-    ros-melodic-ar-track-alvar ros-melodic-trac-ik
 
 #
+# TODO: Offload to another container
+RUN apt update && apt install -y \
+    ros-melodic-ar-track-alvar ros-melodic-trac-ik
 
 WORKDIR /root/rosie
 
@@ -198,4 +194,5 @@ WORKDIR /root/rosie
 #   https://github.com/ros-drivers/four_wheel_steering_msgs
 
 #CMD ["/root/rosie/simstart"]
-CMD ["/root/rosie/rosie-sim-guest-runner"]
+ENTRYPOINT ["/root/rosie/rosie-sim-guest-runner"]
+#CMD [""]
