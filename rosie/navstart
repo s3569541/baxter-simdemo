@@ -1,8 +1,12 @@
 # to avoid weird problem with rosie tipping over in sim
 
+set -xv
+
 [ -f /root/navigation_ws/devel/setup.bash ] || { echo 'trying to build navigation_ws' ; cd /root/navigation_ws ; ./setup ; }
 
-source ~/rosie/rosenv-nav
+# Depends on setup (above)
+# TODO: is this redundant?
+source ~/rosie/rosenv.nav.bash
 
 ###./rvizstart &
 

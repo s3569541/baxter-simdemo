@@ -1,5 +1,9 @@
 #!/bin/bash
 
+source ~/rosie/rosenv.gazebo.bash
+
+set -xv
+
 source ~/rosie/entry
 
 cd ~/ws_baxter
@@ -14,7 +18,7 @@ export MB_LASER_BIRDCAGE_R2000=1
 export MB_LASER_BIRDCAGE_R2000_FREQ=50
 export MB_LASER_BIRDCAGE_R2000_SAMPLES=3600
 
-source ~/rosie/rosenv.bash
+#source ~/rosie/rosenv.bash
 
 ~/rosie/installconfig
 
@@ -63,17 +67,19 @@ rosservice call gazebo/unpause_physics
 
 rostopic pub /rosie_events std_msgs/String 'Rosie Sim Started' -1
 
+~/rosie/untuck
+
 # center head
-rostopic pub /robot/head/command_head_pan baxter_core_msgs/HeadPanCommand '{ target: 0.0, speed_ratio: 0.1 }'
-
-gzclient &
-
-~/rosie/untuck &
+~/rosie/headcentre &
 
 #date > packages.log
 #./aptlist >> packages.log
 
+#sleep 30
+#gzclient &
+#rviz &
+
 while true
 do
-  sleep 1 || cleanup
+  sleep 60 || cleanup
 done

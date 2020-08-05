@@ -1,4 +1,4 @@
 #rosrun baxter_tools enable_robot.py -r
 #rosrun baxter_tools enable_robot.py -e
 #export ROS_NAMESPACE='/rosie'
-rosrun baxter_tools tuck_arms.py -u
+rosrun baxter_tools tuck_arms.py -u && echo VXLab sim: untuck successful

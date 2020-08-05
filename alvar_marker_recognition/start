@@ -3,8 +3,11 @@
 
 echo start: $0
 
+echo Wait 100s for master to start...
+sleep 100
+
 source ~/rosenv
-source ~/ws_baxter/devel/setup.bash
+#source ~/ws_baxter/devel/setup.bash
 source ~/ws_alvar/devel/setup.bash --extend
 
 # left_hand, right_hand or head

@@ -11,9 +11,12 @@ export MB_LASER_BIRDCAGE_R2000_SAMPLES=3600
 
 export LIBGL_ALWAYS_INDIRECT=0
 
+# These three are all implicitly imported by mir_ws/devel/setup.bash
 #source ~/ws_baxter/devel/setup.bash
 #source ~/mb_ws/devel/setup.bash
-source /root/mir_ws/devel/setup.bash
+source ~/mir_ws/devel/setup.bash
+
+export PATH=$PATH:~/rosie
 
 #source ~/navigation_ws/devel/setup.bash
 

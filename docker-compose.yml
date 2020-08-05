@@ -14,8 +14,8 @@ services:
           vxlab:
         ports:
           - "8081:8080"
-    vxlab-rosie:
-        container_name: vxlab-rosie
+    gazebo:
+        container_name: gazebo
         build:
           context: .
           dockerfile: Dockerfile.blue
@@ -36,7 +36,8 @@ services:
           source: /dev/dri
           target: /dev/dri
         environment:
-          DISPLAY: novnc:0
+          #DISPLAY: novnc:0
+          DISPLAY: :0
     vxlab-rosie-nav:
         container_name: vxlab-rosie-nav
         build:
