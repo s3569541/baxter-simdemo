@@ -18,8 +18,6 @@ export MB_LASER_BIRDCAGE_R2000=1
 export MB_LASER_BIRDCAGE_R2000_FREQ=50
 export MB_LASER_BIRDCAGE_R2000_SAMPLES=3600
 
-#source ~/rosie/rosenv.bash
-
 ~/rosie/installconfig
 
 #{ sleep 3 ; tail -f ~/.ros/log/latest/* ; sleep 10; /root/rosie/checkconfig ; } &
