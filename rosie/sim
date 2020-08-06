@@ -24,6 +24,7 @@ function cleanup()
 {
     while kill -INT $ROS_PID; do 
       echo "**** simstart: cleanup PID $ROS_PID ****"
+      killall gzserver
       sleep 5
     done
     #exitscript=true

@@ -36,8 +36,8 @@ services:
           source: /dev/dri
           target: /dev/dri
         environment:
-          #DISPLAY: novnc:0
-          DISPLAY: :0
+          DISPLAY: novnc:0
+          #DISPLAY: :0
     vxlab-rosie-nav:
         container_name: vxlab-rosie-nav
         build:

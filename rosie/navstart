@@ -1,6 +1,4 @@
-set -xv
-
-[ -f /root/navigation_ws/devel/setup.bash ] || { echo 'trying to build navigation_ws' ; cd /root/navigation_ws ; ./setup ; }
+[ -f /root/navigation_ws/devel/setup.bash ] || { echo 'trying to build navigation_ws' ; source /opt/ros/melodic/setup.bash ; cd /root/navigation_ws ; ./setup ; }
 
 # Depends on setup (above)
 # TODO: is this redundant?
