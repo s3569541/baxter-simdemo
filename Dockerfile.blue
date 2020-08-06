@@ -61,7 +61,7 @@ RUN apt-get -qq update && \
     # Download all dependencies
     
 #  remove this line if it breaks install
-#RUN rosdep init
+RUN [ -f /etc/ros/rosdep/sources.list.d/20-default.list ] || rosdep init
 RUN rosdep update
 
 COPY 02proxy /etc/apt/apt.conf.d/02proxy

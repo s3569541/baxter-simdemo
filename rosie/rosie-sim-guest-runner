@@ -1,9 +1,9 @@
 #!/bin/bash
 
-~/rosie/sim &
 
 #!/bin/bash
 while true
 do
-  sleep 60
+  ~/rosie/sim &
+  sleep 10
 done

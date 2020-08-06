@@ -6,17 +6,11 @@ set -xv
 
 source ~/rosie/entry
 
-cd ~/ws_baxter
-#HOSTNAME=`hostname`
-#HOSTNAME=127.0.0.1
-#export ROS_IP=${HOSTNAME}.vx.rmit.edu.au
-#export ROS_IP=${HOSTNAME}
-#export ROS_MASTER_URI=http://${HOSTNAME}.vx.rmit.edu.au:11311
-#export ROS_MASTER_URI=http://${HOSTNAME}:11311
+#cd ~/ws_baxter
 
-export MB_LASER_BIRDCAGE_R2000=1
-export MB_LASER_BIRDCAGE_R2000_FREQ=50
-export MB_LASER_BIRDCAGE_R2000_SAMPLES=3600
+#export MB_LASER_BIRDCAGE_R2000=1
+#export MB_LASER_BIRDCAGE_R2000_FREQ=50
+#export MB_LASER_BIRDCAGE_R2000_SAMPLES=3600
 
 ~/rosie/installconfig
 
@@ -24,7 +18,7 @@ export MB_LASER_BIRDCAGE_R2000_SAMPLES=3600
 
 # triggered by /rosout_agg.function == "GazeboRosVideo::Load"
 
-exitscript=false
+#exitscript=false
 
 function cleanup()
 {
@@ -32,7 +26,7 @@ function cleanup()
       echo "**** simstart: cleanup PID $ROS_PID ****"
       sleep 5
     done
-    exitscript=true
+    #exitscript=true
     echo "**** simstart: exit ****"
     exit
 }

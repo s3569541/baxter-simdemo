@@ -28,7 +28,7 @@ RUN apt-get -qq update && \
         python-catkin-tools
     # Download all dependencies
 
-RUN echo force rebuild
+RUN [ -f /etc/ros/rosdep/sources.list.d/20-default.list ] || rosdep init
 RUN rosdep update
 
 ENV CATKIN_WS=/root/ws_alvar
