@@ -528,10 +528,11 @@ print 'initialisation move...'
 #time.sleep(1)
 #print 'initialisation move...'
 
+global gripper
 
 def callback(data):
-  gripper.open()
   global gripper
+  gripper.open()
   global moved
   global posedebug
   foundmarker = 0
@@ -540,12 +541,12 @@ def callback(data):
       for marker in data.markers:
         if marker.id != 255 and marker.id != 0:
           if not foundmarker:
-		print 'markers:',
+		print 'found markers:',
           foundmarker = 1
 	  print marker.id,
-	  if (marker.id == 2 or marker.id == 4 or marker.id == 5 or marker.id == 13 or marker.id == 14 or marker.id == 10):
+	  #if (marker.id == 9 or marker.id == 2 or marker.id == 4 or marker.id == 5 or marker.id == 13 or marker.id == 14 or marker.id == 10):
+	  if (marker.id == 9 or marker.id == 2 or marker.id == 4 or marker.id == 5 or marker.id == 13 or marker.id == 14 or marker.id == 10):
 	      #print 'found marker',marker.id,marker
-	      print 'found marker',marker.id,
               # check pose is suitable i.e. z axis is pointing upward in base frame...
 	      marker_pose = marker.pose.pose
               ps = PoseStamped(
