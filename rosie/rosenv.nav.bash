@@ -2,6 +2,8 @@
 
 source ~/rosie/rosenv.common.bash
 
-source ~/navigation_ws/devel/setup.bash
+source /opt/ros/melodic/setup.bash
+
+source ~/navigation_ws/devel/setup.bash --extend
 
 #export PATH=$PATH:~/rosie
