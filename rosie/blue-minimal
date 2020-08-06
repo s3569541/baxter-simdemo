@@ -6,7 +6,7 @@ rosservice call /gazebo/delete_model blue_payload_marker1
 rosservice call /gazebo/delete_model blue_payload_marker2
 
 source ~/mir_ws/devel/setup.bash
-source ~/rosie/rosenv.bash
+source ~/rosie/rosenv.common.bash
 
 roslaunch ~/rosie/mir100_minimal_vxlab.launch robot_x:=2.0 robot_y:=2.0 robot_yaw:=0.0 &
 sleep 5
