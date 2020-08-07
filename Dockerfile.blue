@@ -186,6 +186,9 @@ RUN /bin/bash -c "source /root/mb_ws/devel/setup.bash && \
 RUN apt update && apt install -y \
     ros-melodic-ar-track-alvar ros-melodic-trac-ik
 
+RUN apt update && apt install -y \
+    ros-melodic-blender-gazebo
+
 WORKDIR /root/rosie
 
 # install, build ros_control:

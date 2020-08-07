@@ -1,2 +1,6 @@
-docker-compose build && docker-compose -f docker-compose.yml -f docker-compose.test.yml up --force-recreate -d
+#docker-compose build && docker-compose -f docker-compose.yml -f docker-compose.test.yml up --force-recreate -d
+docker-compose build && docker-compose -f docker-compose.yml up --force-recreate -d && \
+  echo running tests && \
+  docker-compose -f docker-compose.yml -f docker-compose.test.yml up --force-recreate -d test
+
 docker logs -f test
