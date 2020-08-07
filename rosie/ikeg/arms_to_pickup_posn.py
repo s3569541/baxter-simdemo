@@ -411,7 +411,7 @@ def right_arm(pos):
     return pose_right
 
 
-def makepose(pos):
+def makepose(pos, orientation=Quaternion(x=0, y=1, z=0, w=0)):
     '''
     Create goal Pose and call ik move
     '''
@@ -421,15 +421,16 @@ def makepose(pos):
                 y=pos.y(),
                 z=pos.z(),
                 ),
+	    orientation=orientation,
             #orientation=Quaternion( x=0, y=1, z=0, w=0), # straight up and down
-            orientation=Quaternion( x=0.0462177008579, y=0.889249134439, z=0.0227669346795, w=0.454512450557), # straight up and down
+            #orientation=Quaternion( x=0.0462177008579, y=0.889249134439, z=0.0227669346795, w=0.454512450557), # toed-in for right camera
             )
     return pose_right
 
-def make_pose_stamped(pos,frame_id='base'):
+def make_pose_stamped(pos,frame_id='base', orientation=Quaternion(x=0, y=1, z=0, w=0)):
   return PoseStamped(
         header=Header(stamp=rospy.Time.now(), frame_id=frame_id),
-        pose=makepose(pos),
+        pose=makepose(pos, orientation),
   )
 
 #time.sleep(2)
@@ -450,8 +451,8 @@ def make_pose_stamped(pos,frame_id='base'):
 rightpos = Vectors.V4D(0.5, -0.47, 0.6, 0)
 leftpos = Vectors.V4D(0.5, 0.47, 0.6, 0)
 
-leftps = make_pose_stamped(leftpos, frame_id='base');
-rightps = make_pose_stamped(rightpos, frame_id='base');
+leftps = make_pose_stamped(leftpos, frame_id='base')
+rightps = make_pose_stamped(rightpos, frame_id='base', orientation=Quaternion( x=0.0358418642718, y=0.916274525553, z=0.325198768724, w=0.231088977253))
 
 resp = trac_ik_solve('right', rightps)
 if resp is not None:
