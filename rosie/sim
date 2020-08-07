@@ -43,22 +43,25 @@ echo "**** roslaunch PID is $ROS_PID ****"
 # await "GazeboRosVideo ... has started"
 ~/rosie/await_video_ready.py || cleanup
 echo "**** prepsim: await_simstart succeeded ****"
+rostopic pub /rosie/sim/events std_msgs/String 'GazeboRosVideo started' -1
 
 ~/rosie/check-config
 
 echo "Tucking arms..."
 ~/rosie/tuck_presim
+rostopic pub /rosie/sim/events std_msgs/String 'Arms pre-tucked' -1
 
 echo "Spawning objects..."
 ~/rosie/table_spawn
 ~/rosie/markerspawn
+rostopic pub /rosie/sim/events std_msgs/String 'Objects spawned' -1
 
 echo "Unpausing..."
 rosservice call gazebo/unpause_physics
 
 ~/rosie/await_simulator_is_loaded.py || cleanup
 
-rostopic pub /rosie_events std_msgs/String 'Rosie Sim Started' -1
+rostopic pub /rosie/sim/events std_msgs/String 'Sim started' -1
 
 ~/rosie/untuck
 

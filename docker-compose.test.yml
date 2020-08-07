@@ -1,0 +1,14 @@
+version: "3.5"
+services:
+    test:
+        container_name: test
+        build:
+          context: .
+          dockerfile: Dockerfile.blue
+        networks:
+          vxlab:
+        volumes:
+        - type: bind
+          source: ./rosie
+          target: /root/rosie
+        entrypoint: bash -c "source ~/.bashrc ; ~/rosie/test"
