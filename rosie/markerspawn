@@ -5,3 +5,6 @@ rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock50_obj/model.sdf -mo
 
 rosservice call /gazebo/delete_model marker_s0
 rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblockgrab_obj/model.sdf -model marker_s0 -x 2.8 -y 0.0 -z 0.9
+
+rosservice call /gazebo/delete_model markercafe_table
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/cafe_table/model.sdf -model markercafe_table -x 2.0 -y 0.0 -z 0.0
