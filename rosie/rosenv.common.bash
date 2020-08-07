@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# install-specific config
+source ~/rosie/rosenv.local.bash
+
 HOSTNAME=`hostname`
 export ROS_IP=`host ${HOSTNAME} | sed 's/.* //g'`
 export MASTER_IP=`host gazebo | sed 's/.* //g'`

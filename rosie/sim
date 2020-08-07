@@ -52,8 +52,7 @@ echo "Tucking arms..."
 rostopic pub /rosie/sim/events std_msgs/String 'Arms pre-tucked' -1
 
 echo "Spawning objects..."
-~/rosie/table_spawn
-~/rosie/markerspawn
+~/rosie/spawn
 rostopic pub /rosie/sim/events std_msgs/String 'Objects spawned' -1
 
 echo "Unpausing..."

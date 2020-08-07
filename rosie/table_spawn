@@ -1,4 +1,8 @@
 #!/bin/bash
 
-rosservice call /gazebo/delete_model table1
-rosrun gazebo_ros spawn_model -urdf -file /opt/ros/melodic/share/cob_gazebo_objects/objects/table_bedside.urdf -model table1 -x 2.0 -y 0 -z 0.0
+rosservice call /gazebo/delete_model cafe_table1
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/cafe_table/model.sdf -model cafe_table1 -x 1.55 -y 0.0 -z 0.0
+
+rosservice call /gazebo/delete_model cafe_table2
+rosservice call /gazebo/delete_model markercafe_table2
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/cafe_table/model.sdf -model cafe_table2 -x 2.5 -y 0.0 -z 0.0
