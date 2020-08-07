@@ -108,27 +108,32 @@ def translate_frame(ps,frame):
 # TRAC IK solver for Baxter
 ##################################
 
+# make search start position from current joint states
+def make_seed(limb):
+        arm = baxter_interface.Limb(limb)
+        state = arm.joint_angles()
+        print 'solve current:',arm.joint_angles()
+        jointnames = ['s0','s1','e0','e1','w0','w1','w2']
+        seed = []
+        for i in range(0, len(jointnames)):
+            key = limb+"_"+jointnames[i]
+            seed.append(state[key])
+        return seed
+
 # ps: PoseStamped
 def trac_ik_solve(limb, ps):
 	time.sleep(1)
 	target_topic.publish(ps)
 	time.sleep(1)
-	arm = baxter_interface.Limb(limb)
-	state = arm.joint_angles()
-	print 'solve current:',arm.joint_angles()
-	jointnames = ['s0','s1','e0','e1','w0','w1','w2']
-        command = []
-	for i in range(0, len(jointnames)):
-	    key = limb+"_"+jointnames[i]
-	    command.append(state[key])
+        command = make_seed(limb)
 	print 'candidate seed',command
         local_base_frame = limb+"_arm_mount"
         ik_solver = IK(local_base_frame,
                        #limb+"_wrist",
                        limb+"_gripper",
                        urdf_string=urdf_str)
-        seed_state = [0.0] * ik_solver.number_of_joints
-        #seed_state = command
+        #seed_state = [0.0] * ik_solver.number_of_joints
+        seed_state = command
         # canonical pose in local_base_frame
         #hdr = Header(stamp=rospy.Time.now(), frame_id=from_frame)
         #ps = PoseStamped(
@@ -406,7 +411,7 @@ def right_arm(pos):
     return pose_right
 
 
-def pose2(pos):
+def makepose(pos):
     '''
     Create goal Pose and call ik move
     '''
@@ -416,14 +421,16 @@ def pose2(pos):
                 y=pos.y(),
                 z=pos.z(),
                 ),
-            orientation=Quaternion(
-                x=0,
-                y=1,
-                z=0,
-                w=0
-                ),
+            #orientation=Quaternion( x=0, y=1, z=0, w=0), # straight up and down
+            orientation=Quaternion( x=0.0462177008579, y=0.889249134439, z=0.0227669346795, w=0.454512450557), # straight up and down
             )
     return pose_right
+
+def make_pose_stamped(pos,frame_id='base'):
+  return PoseStamped(
+        header=Header(stamp=rospy.Time.now(), frame_id=frame_id),
+        pose=makepose(pos),
+  )
 
 #time.sleep(2)
 
@@ -431,48 +438,32 @@ def pose2(pos):
 ### Example proper
 ###
 
-mylimb = 'right'
-
-print 'init gripper'
-gripper = baxter_interface.Gripper(mylimb, CHECK_VERSION)
-#gripper.calibrate()
-gripper.close()
-gripper.open()
-#gripper.calibrate()
-print 'init gripper done'
-
-print 'Example proper...'
+#print 'init gripper'
+#gripper = baxter_interface.Gripper(mylimb, CHECK_VERSION)
+##gripper.calibrate()
+#gripper.close()
+#gripper.open()
+##gripper.calibrate()
+#print 'init gripper done'
 
 # initial position for arm
-init_pos = Vectors.V4D(0.8,
-        -0.47,
-        0.2, 0)
+rightpos = Vectors.V4D(0.5, -0.47, 0.6, 0)
+leftpos = Vectors.V4D(0.5, 0.47, 0.6, 0)
 
-bound = Vectors.V4D(0.656982770038,
-        -0.252598021641,
-        0.5388609422173, 0)
+leftps = make_pose_stamped(leftpos, frame_id='base');
+rightps = make_pose_stamped(rightpos, frame_id='base');
 
-init_pos2 = Vectors.V4D(0.656982770038,
-        -0.35,
-        0.1, 0)
-
-init_pos3 = Vectors.V4D(0.656982770038,
-        -0.35,
-        0.4, 0)
-
-myps = PoseStamped(
-			header=Header(stamp=rospy.Time.now(), frame_id='base'),
-			pose=pose2(init_pos),
-)
-
-print 'initialisation move to',myps
-
-resp = trac_ik_solve(mylimb, myps)
+resp = trac_ik_solve('right', rightps)
 if resp is not None:
-    print 'moving...'
-    make_move_trac(resp, mylimb, 0.4)
+    make_move_trac(resp, 'right', 0.3)
 else:
-    print 'IK error'
+    print 'IK error - right'
+
+resp = trac_ik_solve('left', leftps)
+if resp is not None:
+    make_move_trac(resp, 'left', 0.3)
+else:
+    print 'IK error - left'
 
 #while True:
 #    rospy.sleep(1.0)

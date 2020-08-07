@@ -431,48 +431,17 @@ def pose2(pos):
 ### Example proper
 ###
 
-mylimb = 'right'
+frame = 'base'
+source_frame = 'right_gripper_base'
 
-print 'init gripper'
-gripper = baxter_interface.Gripper(mylimb, CHECK_VERSION)
-#gripper.calibrate()
-gripper.close()
-gripper.open()
-#gripper.calibrate()
-print 'init gripper done'
-
-print 'Example proper...'
-
-# initial position for arm
-init_pos = Vectors.V4D(0.8,
-        -0.47,
-        0.2, 0)
-
-bound = Vectors.V4D(0.656982770038,
-        -0.252598021641,
-        0.5388609422173, 0)
-
-init_pos2 = Vectors.V4D(0.656982770038,
-        -0.35,
-        0.1, 0)
-
-init_pos3 = Vectors.V4D(0.656982770038,
-        -0.35,
-        0.4, 0)
-
-myps = PoseStamped(
-			header=Header(stamp=rospy.Time.now(), frame_id='base'),
-			pose=pose2(init_pos),
-)
-
-print 'initialisation move to',myps
-
-resp = trac_ik_solve(mylimb, myps)
-if resp is not None:
-    print 'moving...'
-    make_move_trac(resp, mylimb, 0.4)
-else:
-    print 'IK error'
+if True:
+    transform = tf_buffer.lookup_transform(frame,
+      source_frame, #source frame
+      #rospy.Time(0), #get the tf at first available time
+      rospy.Time.now(), #get the tf at first available time
+      rospy.Duration(2.0)) #wait for 2 seconds
+    #pose_transformed = tf2_geometry_msgs.do_transform_pose(ps, transform)
+    print 'transform',transform
 
 #while True:
 #    rospy.sleep(1.0)
