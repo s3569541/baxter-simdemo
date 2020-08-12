@@ -13,7 +13,7 @@
 ## Prerequisites:
 - docker-ce
 - docker-compose
-- (optional mir100 in same sim: https://github.com/ipeakermit/mir_robot_in_vxlab_sim)
+- (optional mir100 in same sim: https://github.com/ipeakermit/mir_robot_in_vxlab_sim/tree/rosie-and-blue-1st-attempt)
 - optionally, edit 02proxy to point to a nearby Debian apt-cacher-ng proxy
 
 ## Build using:
