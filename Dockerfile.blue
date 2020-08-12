@@ -189,6 +189,16 @@ RUN apt update && apt install -y \
 RUN apt update && apt install -y \
     ros-melodic-blender-gazebo
 
+## dynamic joint attacher
+#RUN mkdir -p /root/gazebo_link_attacher_ws/src
+#WORKDIR /root/gazebo_link_attacher_ws/src
+##RUN source melodic/setup.bash && catkin_init_workspace
+#RUN source /root/mir_ws/devel/setup.bash && catkin_init_workspace
+#RUN git clone https://github.com/beta-robots/gazebo_ros_link_attacher.git
+#WORKDIR /root/gazebo_link_attacher_ws/
+##RUN source /opt/ros/melodic/setup.bash && catkin_config --extend /root/ catkin_make
+#RUN source /opt/ros/melodic/setup.bash && source /root/mir_ws/devel/setup.bash && catkin config --extend /root/mir_ws/devel && catkin_make
+
 WORKDIR /root/rosie
 
 # install, build ros_control:
