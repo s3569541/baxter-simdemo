@@ -98,11 +98,13 @@ def main():
     camname = 'right_hand_camera'
     ####cam = CameraController('head_camera')
     ####cam.close()
-    reset_cameras()
+    #reset_cameras()
     cam = CameraController(camname)
+    cam.open()
     print 'camera ',camname
     print 'gain ',cam.gain
     print 'res ',cam.resolution
+    cam.close()
 
 if __name__ == '__main__':
     sys.exit(main())
