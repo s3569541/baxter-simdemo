@@ -22,7 +22,7 @@ DWAPlannerROS:
 
   prune_plan: true
 
-  yaw_goal_tolerance: 0.7
+  yaw_goal_tolerance: 1.0
   xy_goal_tolerance: 0.3
 
   trans_stopped_vel: 0.1
