@@ -17,14 +17,14 @@ from geometry_msgs.msg import (
 import tf2_ros
 import tf2_geometry_msgs
 
-rospy.init_node("marker_ik_example_tractest")
-
 tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0)) #tf buffer length
+rospy.init_node("tractest", anonymous=True)
+
 tf_listener = tf2_ros.TransformListener(tf_buffer)
 
 from std_msgs.msg import Header
 
-time.sleep(2)
+#time.sleep(2)
 
 global posedebug
 posedebug = rospy.Publisher('/red/trac_eg/pose_debug', PoseStamped, queue_size=1)
