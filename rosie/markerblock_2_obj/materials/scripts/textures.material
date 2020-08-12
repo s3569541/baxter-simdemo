@@ -1,0 +1,14 @@
+material markerblock/markers_alvar2
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture MarkerData_99999_0_1_2_3_4_5_99998.png
+      }
+    }
+  }
+}
+

@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="markerblock50">
+    <pose>0 0 0 0 0 0</pose>
+    <link name="box">
+      <pose>0 0 0 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>file:///root/rosie/markerblock_4_obj/meshes/alvar4.dae</uri>
+            <scale>0.02 0.02 0.02</scale>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>file:///root/rosie/markerblock_4_obj/meshes/alvar4.dae</uri>
+            <scale>0.02 0.02 0.02</scale>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <uri>file:///root/rosie/markerblock_4_obj/materials/scripts/textures.material</uri>
+            <uri>file:///root/rosie/markerblock_4_obj/materials/textures</uri>
+            <name>markerblock/markers_alvar4</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>
+
