@@ -1,0 +1,6 @@
+#!/bin/bash
+
+rosservice call /link_attacher_node/attach "model_name_1: 'mobility_base'
+link_name_1: 'base_footprint'
+model_name_2: 'cafe_table2'
+link_name_2: 'link'"
