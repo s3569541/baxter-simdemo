@@ -38,6 +38,20 @@ services:
         environment:
           DISPLAY: novnc:0
           #DISPLAY: :0
+    # separate misc command and control functions from simulation itself for testing etc.
+    main:
+        container_name: main
+        build:
+          context: .
+          dockerfile: Dockerfile.blue
+        networks:
+          vxlab:
+        volumes:
+        - type: bind
+          source: ./rosie
+          target: /root/rosie
+        entrypoint: ["/root/rosie/rosie-main-guest-runner"]
+ 
     vxlab-rosie-nav:
         container_name: vxlab-rosie-nav
         build:
