@@ -24,10 +24,14 @@ import random
 import tf2_ros
 import tf2_geometry_msgs
 
+print 'init node...'
 rospy.init_node("marker_ik_example")
+print 'init node done'
 
+print 'init TF'
 tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0)) #tf buffer length
 tf_listener = tf2_ros.TransformListener(tf_buffer)
+print 'init TF done'
 
 import geometry_msgs.msg
 
@@ -59,34 +63,17 @@ dz = 0.0;
 
 #time.sleep(2)
 
+print 'init publishers...'
 global posedebug
-posedebug = rospy.Publisher('/red/pose_debug', PoseStamped, queue_size=2)
+posedebug = rospy.Publisher('/red/pose_debug', PoseStamped, queue_size=1)
 global marker_topic
-marker_topic = rospy.Publisher('/red/ikeg/target_marker_pose', PoseStamped, queue_size=5)
+marker_topic = rospy.Publisher('/red/ikeg/target_marker_pose', PoseStamped, queue_size=1)
 global target_topic
-target_topic = rospy.Publisher('/red/ikeg/target_gripper_pose', PoseStamped, queue_size=5)
+target_topic = rospy.Publisher('/red/ikeg/target_gripper_pose', PoseStamped, queue_size=1)
+print 'init publishers done'
 
 global redebug
 redebug = rospy.Publisher('/red/debug', String, queue_size=1)
-
-# Something in here doesn't work unless Baxter is the master
-#rs = baxter_interface.RobotEnable(CHECK_VERSION)
-#init_state = rs.state().enabled
-#print 'initial state', init_state
-#rs.enable()
-
-#global gframe_name
-#global gframe_parent
-#def frame_pub():
-#thread = threading.Thread(target=publisher)
-#thread.start()
-
-global gripper
-gripper = baxter_interface.Gripper('left', CHECK_VERSION)
-gripper.calibrate()
-#gripper.close()
-gripper.open(block=True)
-#gripper.calibrate()
 
 # translate a pose in terms of its "own" rotational axes (as if it had its own frame)
 def translate_pose_in_own_frame(ps,localname,dx,dy,dz):
@@ -121,19 +108,24 @@ def translate_frame(ps,frame):
 # TRAC IK solver for Baxter
 ##################################
 
-global mylimb
-mylimb = 'left'
+# make search start position from current joint states
+def make_seed(limb):
+        arm = baxter_interface.Limb(limb)
+        state = arm.joint_angles()
+        print 'solve current:',arm.joint_angles()
+        jointnames = ['s0','s1','e0','e1','w0','w1','w2']
+        seed = []
+        for i in range(0, len(jointnames)):
+            key = limb+"_"+jointnames[i]
+            seed.append(state[key])
+        return seed
 
 # ps: PoseStamped
 def trac_ik_solve(limb, ps):
-	arm = baxter_interface.Limb(limb)
-	state = arm.joint_angles()
-	print 'solve current:',arm.joint_angles()
-	jointnames = ['s0','s1','e0','e1','w0','w1','w2']
-        command = []
-	for i in range(0, len(jointnames)):
-	    key = limb+"_"+jointnames[i]
-	    command.append(state[key])
+	time.sleep(1)
+	target_topic.publish(ps)
+	time.sleep(1)
+        command = make_seed(limb)
 	print 'candidate seed',command
         local_base_frame = limb+"_arm_mount"
         ik_solver = IK(local_base_frame,
@@ -163,53 +155,13 @@ def trac_ik_solve(limb, ps):
         print 'trac soln',soln
         return soln
 
+print 'get_param /robot_description...'
 # Get your URDF from somewhere
 urdf_str = rospy.get_param('/robot_description')
+print 'get_param /robot_description done'
 
 def ik_solve(limb,pose,frame):
-    #baxter_ik_solve(limb,pose,frame)
     return trac_ik_solve(limb,pose,frame)
-
-def baxter_ik_solve(limb, pose, frame):
-    ns = "ExternalTools/" + limb + "/PositionKinematicsNode/IKService"
-    iksvc = rospy.ServiceProxy(ns, SolvePositionIK)
-    ikreq = SolvePositionIKRequest()
-    #hdr = Header(stamp=rospy.Time.now(), frame_id='reference/right_hand_camera')
-    hdr = Header(stamp=rospy.Time.now(), frame_id=frame)
-    ps = PoseStamped(
-            header=hdr,
-            pose=pose,
-            )
-    global posedebug
-    target_topic.publish(ps)
-    ikreq.pose_stamp.append(ps)
-    try:
-        #print 'ik_solve: waiting...'
-        rospy.wait_for_service(ns, 5.0)
-        resp = iksvc(ikreq)
-    except (rospy.ServiceException, rospy.ROSException), e:
-        rospy.logerr("Service call failed: %s" % (e,))
-        return 1
-    #print 'ik_solve: done...'
-
-    # Check if result valid, and type of seed ultimately used to get solution
-    # convert rospy's string representation of uint8[]'s to int's
-    resp_seeds = struct.unpack('<%dB' % len(resp.result_type),
-            resp.result_type)
-    if (resp_seeds[0] != resp.RESULT_INVALID):
-        seed_str = {
-                ikreq.SEED_USER: 'User Provided Seed',
-                ikreq.SEED_CURRENT: 'Current Joint Angles',
-                ikreq.SEED_NS_MAP: 'Nullspace Setpoints',
-                }.get(resp_seeds[0], 'None')
-        #print("SUCCESS - Valid Joint Solution Found from Seed Type: %s" % (seed_str,))
-        # Format solution into Limb API-compatible dictionary
-        limb_joints = dict(zip(resp.joints[0].name, resp.joints[0].position))
-        print 'ik_solve: solution found...',limb_joints
-        return resp
-    else:
-        print("INVALID POSE - No Valid Joint Solution Found.")
-        return None
 
 # joints: 
 #  - 
@@ -272,9 +224,6 @@ def make_move_trac(msg, limb, speed):
 def solve_move_trac(limb,ps):
     print '*********************'
     print 'solve_move_trac',limb,ps
-    #time.sleep(1)
-    #target_topic.publish(ps)
-    #time.sleep(1)
     soln = trac_ik_solve(limb,ps)
     if not soln:
 	print '***** NO SOLUTION ******',soln
@@ -462,7 +411,7 @@ def right_arm(pos):
     return pose_right
 
 
-def pose2(pos):
+def makepose(pos, orientation=Quaternion(x=0, y=1, z=0, w=0)):
     '''
     Create goal Pose and call ik move
     '''
@@ -472,112 +421,42 @@ def pose2(pos):
                 y=pos.y(),
                 z=pos.z(),
                 ),
-            orientation=Quaternion(
-                x=0,
-                y=1,
-                z=0,
-                w=0
-                ),
+	    orientation=orientation,
+            #orientation=Quaternion( x=0, y=1, z=0, w=0), # straight up and down
+            #orientation=Quaternion( x=0.0462177008579, y=0.889249134439, z=0.0227669346795, w=0.454512450557), # toed-in for right camera
             )
     return pose_right
 
+def make_pose_stamped(pos,frame_id='base', orientation=Quaternion(x=0, y=1, z=0, w=0)):
+  return PoseStamped(
+        header=Header(stamp=rospy.Time.now(), frame_id=frame_id),
+        pose=makepose(pos, orientation),
+  )
+
 #time.sleep(2)
 
-init_pos = Vectors.V4D(0.8,
-        -0.47,
-        0.2, 0)
+###
+### Example proper
+###
 
-bound = Vectors.V4D(0.656982770038,
-        -0.252598021641,
-        0.5388609422173, 0)
+print 'init gripper'
+mylimb = 'left'
+gripper = baxter_interface.Gripper(mylimb, CHECK_VERSION)
+gripper.close()
+#gripper.calibrate()
+gripper.open()
+##gripper.calibrate()
+#print 'init gripper done'
 
-init_pos2 = Vectors.V4D(0.656982770038,
-        -0.35,
-        0.1, 0)
+# initial position for arm
+leftpos = Vectors.V4D(0.5, -0.01, 0.3, 0)
 
-init_pos3 = Vectors.V4D(0.656982770038,
-        -0.35,
-        0.4, 0)
+solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.47, -0.01, 0.4, 0), frame_id='base'))
+rospy.sleep(1.0)
+solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.47, -0.01, 0.2, 0), frame_id='base'))
+gripper.close()
+rospy.sleep(1.0)
+solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.47, -0.01, 0.6, 0), frame_id='base'))
 
-# this works on command line but not in rospy!?
-# rostopic pub /red/pose_debug geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: "map"}, pose: {position: {x: 1.0, y: 0.0, z: 0.0}, orientation: {w: 1.0}}}'
-#time.sleep(2)
-myps = PoseStamped(
-			header=Header(stamp=rospy.Time.now(), frame_id='base'),
-			#pose=Pose(position=Point(1.0,0.0,0.0),orientation=Quaternion(0.0,0.0,0.0,1.0))
-			pose=pose2(init_pos),
-)
-#time.sleep(2)
-#print 'posedebug test'
-#print 'posedebug test done'
-
-global moved
-moved = False
-
-time.sleep(1)
-posedebug.publish(myps)
-time.sleep(1)
-
-print 'initialisation move...'
-#resp = trac_ik_solve(mylimb, myps)
-#if resp is not None:
-#    print 'moving...'
-#    make_move_trac(resp, mylimb, 0.4)
-#else:
-#    print 'IK error'
-#time.sleep(1)
-#print 'initialisation move...'
-
-
-def callback(data):
-  global gripper
-  global moved
-  global posedebug
-  foundmarker = 0
-  if not moved:
-    if data.markers:
-      for marker in data.markers:
-        if marker.id != 255 and marker.id != 0:
-          if not foundmarker:
-		print 'markers:',
-          foundmarker = 1
-	  print marker.id,
-	  if (marker.id == 2 or marker.id == 4 or marker.id == 5 or marker.id == 13 or marker.id == 14 or marker.id == 10):
-	      #print 'found marker',marker.id,marker
-	      print 'found marker',marker.id,
-              # check pose is suitable i.e. z axis is pointing upward in base frame...
-	      marker_pose = marker.pose.pose
-              ps = PoseStamped(
-			  header=marker.header,
-			  pose=marker.pose.pose,
-		      )
-	      # marker pose in base_link frame
- 	      psbl = translate_frame(ps,'base_link')
-	      orientation_q = psbl.pose.orientation
-    	      orientation_l = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
-    	      (roll,pitch,yaw) = euler_from_quaternion(orientation_l)
-	      print ' rpy ',roll,pitch,yaw,
-	      if abs(roll)<0.25 and abs(pitch)<0.25:
-		  print '*** roughly level ***',
-		  marker_topic.publish(ps)
-		  pose = target_from_marker(ps)
-		  finalpose = lift_in_base_frame(pose,0.2)
-		  # HOVER POSITION - this is a truly magic number!
-		  # - works well for 0.15, not nearly so well for 0.1
-		  abovepose = lift_in_base_frame(pose,0.15)
-		  grabpose = lift_in_base_frame(pose,-0.02)
-		  gripper.open(block=True)
-		  resp = solve_move_trac('left', abovepose)
-		  resp = solve_move_trac('left', grabpose)
-		  gripper.close(block=True)
-		  time.sleep(0.5)
-		  resp = solve_move_trac('left', finalpose)
-		  time.sleep(0.5)
-		  gripper.open(block=True)
-      if foundmarker:
-          print
-
-rospy.Subscriber('/ar_pose_marker', AlvarMarkers, callback, queue_size=1)
-
-#time.sleep(240)
-rospy.spin()
+#while True:
+#    rospy.sleep(1.0)

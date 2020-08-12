@@ -1,5 +1,7 @@
 #!/usr/bin/python
-# Baxter boogie REAM team 2018 Semester 1
+
+# Use feedback from gripper camera to guide pickup
+# (Sometimes fails apparently due to difficulty interpreting z distance to marker)
 
 import socket
 import math
@@ -125,42 +127,51 @@ global mylimb
 mylimb = 'left'
 
 # ps: PoseStamped
-def trac_ik_solve(limb, ps):
+def trac_ik_solve(limb, ps, seed_as_posn=True,posn_tol=0.01):
 	arm = baxter_interface.Limb(limb)
-	state = arm.joint_angles()
-	print 'solve current:',arm.joint_angles()
+	#print 'solve current:',arm.joint_angles()
 	jointnames = ['s0','s1','e0','e1','w0','w1','w2']
-        command = []
-	for i in range(0, len(jointnames)):
-	    key = limb+"_"+jointnames[i]
-	    command.append(state[key])
-	print 'candidate seed',command
+        success = False
+        while not success:
+	    state = arm.joint_angles()
+            command = []
+            success = True
+	    for i in range(0, len(jointnames)):
+	        key = limb+"_"+jointnames[i]
+	        if not key in state:
+                    success = False
+	            break
+	        command.append(state[key])
+	#print 'candidate seed',command
         local_base_frame = limb+"_arm_mount"
         ik_solver = IK(local_base_frame,
                        #limb+"_wrist",
                        limb+"_gripper",
                        urdf_string=urdf_str)
-        #seed_state = [0.0] * ik_solver.number_of_joints
-        seed_state = command
+	if seed_as_posn:
+	    seed_state = command
+	else:
+	    seed_state = [0.0] * ik_solver.number_of_joints
         # canonical pose in local_base_frame
         #hdr = Header(stamp=rospy.Time.now(), frame_id=from_frame)
         #ps = PoseStamped(
         #        header=hdr,
         #        pose=pose,
         #        )
-	#gripper_ps = translate_in_frame(ps,'right_wrist',0,0,0)
-	#gripper_ps = translate_pose_in_own_frame(ps,'gripper_target',0.015,-0.02,-0.2)
-	gripper_ps = translate_pose_in_own_frame(ps,'gripper_target',0,0,0.05)
-        p = translate_frame(gripper_ps,local_base_frame)
+	###gripper_ps = translate_in_frame(ps,'right_wrist',0,0,0)
+	###gripper_ps = translate_pose_in_own_frame(ps,'gripper_target',0.015,-0.02,-0.2)
+	#gripper_ps = translate_pose_in_own_frame(ps,'gripper_target',0,0,0.05)
+        #p = translate_frame(gripper_ps,local_base_frame)
+        p = translate_frame(ps,local_base_frame)
         #print 'translated frame',p
         soln = ik_solver.get_ik(seed_state,
                         p.pose.position.x,p.pose.position.y,p.pose.position.z,  # X, Y, Z
                         p.pose.orientation.x, p.pose.orientation.y, p.pose.orientation.z, p.pose.orientation.w,  # QX, QY, QZ, QW
-                        0.01,0.01,0.01,
+                        posn_tol,posn_tol,posn_tol,
                         0.1,0.1,0.1,
 
         )
-        print 'trac soln',soln
+        #print 'trac soln',soln
         return soln
 
 # Get your URDF from somewhere
@@ -231,127 +242,88 @@ def make_move_baxter(msg, limb, speed):
     SPEED_SCALE = 1
     speed = speed * SPEED_SCALE
     arm = baxter_interface.Limb(limb)
-    print 'arm',arm
+    #print 'arm:',arm
     lj = arm.joint_names()
     command = {}
     for i in range(0, len(msg.joints[0].name)):
         command[msg.joints[0].name[i]] = msg.joints[0].position[i]
-    print 'current:',arm.joint_angles()
-    print 'make_move: speed',speed
+    #print 'current:',arm.joint_angles()
+    #print 'make_move: speed',speed
     arm.set_joint_position_speed(speed)
-    print 'make_move_baxter: posns',command
+    #print 'make_move_baxter: posns',command
     #arm.set_joint_positions(command)
     arm.move_to_joint_positions(command)
-    print 'make_move: done'
+    #print 'make_move: done'
 
 # msg: 7-vector of positions corresponding to joints
 # limb: 'left'|'right'
-def make_move_trac(msg, limb, speed):
-    print 'make_move_trac',msg
+def make_move_cmd_trac(msg, limb, speed):
+    #print 'make_move_trac',msg
     SPEED_SCALE = 1
     speed = speed * SPEED_SCALE
     arm = baxter_interface.Limb(limb)
-    print 'arm',arm
+    #print 'arm',arm
     lj = arm.joint_names()
     command = {}
     # for i in range(0, len(msg.joints[0].name)):
     jointnames = ['s0','s1','e0','e1','w0','w1','w2']
     for i in range(0, len(jointnames)):
         command[limb+"_"+jointnames[i]] = msg[i]
-    print 'current:',arm.joint_angles()
-    print 'make_move: speed',speed
+    #print 'current:',arm.joint_angles()
+    #print 'make_move: speed',speed
     arm.set_joint_position_speed(speed)
-    print 'make_move_trac: posns',command
+    return command
+
+# msg: 7-vector of positions corresponding to joints
+# limb: 'left'|'right'
+def make_move_trac(msg, limb, speed):
+    #print 'make_move_trac',msg
+    SPEED_SCALE = 1
+    speed = speed * SPEED_SCALE
+    arm = baxter_interface.Limb(limb)
+    #print 'arm',arm
+    lj = arm.joint_names()
+    command = {}
+    # for i in range(0, len(msg.joints[0].name)):
+    jointnames = ['s0','s1','e0','e1','w0','w1','w2']
+    for i in range(0, len(jointnames)):
+        command[limb+"_"+jointnames[i]] = msg[i]
+    #print 'current:',arm.joint_angles()
+    #print 'make_move: speed',speed
+    arm.set_joint_position_speed(speed)
+    #print 'make_move_trac: posns',command
     #arm.set_joint_positions(command)
-    arm.move_to_joint_positions(command)
-    print 'make_move: done'
+    arm.move_to_joint_positions(command,timeout=5.0)
+    #print 'make_move: done'
 
 # move limb-gripper to given PoseStamped (absolute)
 # limb: 'left'|'right'
+# limb: Limb
 # ps: PoseStamped including header.frame_id
-def solve_move_trac(limb,ps):
-    print '*********************'
-    print 'solve_move_trac',limb,ps
+def solve_move_trac(limb,ps,posn_tol=None,speed=0.8):
+    my_posn_tol=0.005
+    if posn_tol:
+        my_posn_tol = posn_tol
+    #print '*********************'
+    #print 'solve_move_trac',limb,ps
+    #print 'solve_move_trac: (solve) ',limb
     #time.sleep(1)
     #target_topic.publish(ps)
     #time.sleep(1)
-    soln = trac_ik_solve(limb,ps)
+    soln = trac_ik_solve(limb,ps,posn_tol=my_posn_tol)
     if not soln:
-	print '***** NO SOLUTION ******',soln
-    else:
-        print 'soln',soln
-    make_move_trac(soln, limb, 0.8)
-
-def recv_data(data):
-    '''
-    Take udp data and break into component messages
-    '''
-    
-    # split on token
-    list_data = data.split(',')
-    
-    # Convert next beat time
-    list_data[0] = float(list_data[0])
-
-    # Convert and normalize energy
-    list_data[1] = float(list_data[1])
-    list_data[1] = min(3000, list_data[1])
-    list_data[1] /= 3000
-
-    list_data[2] = float(list_data[2]);
-
-    dict_data = {'beat': list_data[0], 'energy': list_data[1], 'onset': list_data[2]}
-
-    return dict_data
-
-def decide_increment(data): 
-    #TODO - decide based on data
-    mutex.acquire()
-    global direction
-    
-    global dz
-
-    global last_data;
-    if last_data is None:
-        last_data = data;
-
-    if (data is not None):
-        wow = data['onset'];
-        dwow = data['onset'] - last_data['onset'];
-        if abs(dwow) > 0.01:
-            dz = dwow / 10.0;
-        print "dwow", dwow;
-
-    print "dz: ", dz
-
-    inc = Vectors.V4D(0.0, direction * 0.05, dz , 0.0)
-    mutex.release()
-
-    last_data = data;
-
-    return inc;
-
-def clamp(p, inner, outer):
-    if p.x() > outer.x():
-        p = Vectors.V4D(outer.x(), p.y(), p.z(), p.w())
-    elif p.x() < inner.x():
-        p = Vectors.V4D(inner.x(), p.y(), p.z(), p.w())
-    if p.y() > outer.y():
-        p = Vectors.V4D(p.x(), outer.y(), p.z(), p.w())
-    elif p.y() < inner.y():
-        p = Vectors.V4D(p.x(), inner.y(), p.z(), p.w())
-    if p.z() > outer.z():
-        p = Vectors.V4D(p.x(), p.y(), outer.z(), p.w())
-    elif p.z() < inner.z():
-        p = Vectors.V4D(p.x(), p.y(), inner.z(), p.w())
-    if p.w() > outer.w():
-        p = Vectors.V4D(p.x(), p.y(), p.z(), outer.w())
-    elif p.w() < inner.w():
-        p = Vectors.V4D(p.x(), p.y(), p.z(), inner.w())
-
-    return p
-
-
+	print '***** solve_move_trac no soln, retry with zero seed ******',soln
+        if posn_tol:
+            return False
+	soln = trac_ik_solve(limb,ps,seed_as_posn=False)
+	if not soln:
+	    print '***** solve_move_trac: NO SOLUTION ******',soln
+	    return False
+    #else:
+        #print 'solve_move_trac: soln',soln
+    #print 'solve_move_trac: (move) ',limb
+    make_move_trac(soln, limb, speed)
+    return soln
 
 def jitter():
     return random.uniform(-0.05, 0.05)
@@ -411,13 +383,7 @@ def target_from_marker(ps):
 	ps.pose.orientation.z,
 	ps.pose.orientation.w)
     # Leroy's guess
-    #q_rot = quaternion_from_euler(math.pi/2, math.pi, 0.0, 'rzyx')
     q_rot = quaternion_from_euler(0.0, math.pi, math.pi/2)
-    #q_rot1 = quaternion_from_euler(0.0, 0.0, math.pi, 'rzyx')
-    #q_rot = quaternion_from_euler(math.pi/2, 0.0, 0.0, 'rzyx')
-    #q_new = quaternion_from_euler(0, 0, 0)
-    #q_new = quaternion
-    #q_new = quaternion_multiply(q_rot, quaternion)
     q_new = quaternion_multiply(quaternion, q_rot)
     pose_rot = PoseStamped(
 	header=ps.header,
@@ -461,6 +427,30 @@ def right_arm(pos):
             )
     return pose_right
 
+
+# set to default orientation along z-axis
+def set_orientation(pos):
+    '''
+    Create goal Pose and call ik move
+    '''
+    pose_right = Pose(
+            position=Point(
+                x=pos.x(),
+                y=pos.y(),
+                z=pos.z(),
+                ),
+            orientation=Quaternion(
+                x=0,
+                y=1,
+                z=0,
+                w=0
+                ),
+            )
+    ps = PoseStamped(
+              header=Header(stamp=rospy.Time.now(), frame_id='base'),
+              pose=pose_right,
+          )
+    return ps
 
 def pose2(pos):
     '''
@@ -528,23 +518,35 @@ print 'initialisation move...'
 #time.sleep(1)
 #print 'initialisation move...'
 
+global markerglobal
+markerglobal = None
 
+global poseglobal
+poseglobal = None
+
+global since_left
+since_left = 0
+
+# only return right pose after <right_threshold> right poses since last left pose
 def callback(data):
+  right_threshold = 10
   global gripper
   global moved
   global posedebug
-  foundmarker = 0
+  global since_left
+  foundmarker = False
+  global poseglobal
+  global markerglobal
   if not moved:
     if data.markers:
       for marker in data.markers:
         if marker.id != 255 and marker.id != 0:
-          if not foundmarker:
-		print 'markers:',
-          foundmarker = 1
-	  print marker.id,
+          #if not foundmarker:
+		#print 'markers:',
+          foundmarker = True
+	  #print marker.id,
 	  if (marker.id == 2 or marker.id == 4 or marker.id == 5 or marker.id == 13 or marker.id == 14 or marker.id == 10):
-	      #print 'found marker',marker.id,marker
-	      print 'found marker',marker.id,
+	      #print 'found marker',marker.id,marker.header.frame_id
               # check pose is suitable i.e. z axis is pointing upward in base frame...
 	      marker_pose = marker.pose.pose
               ps = PoseStamped(
@@ -556,28 +558,156 @@ def callback(data):
 	      orientation_q = psbl.pose.orientation
     	      orientation_l = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
     	      (roll,pitch,yaw) = euler_from_quaternion(orientation_l)
-	      print ' rpy ',roll,pitch,yaw,
+	      #print ' rpy ',roll,pitch,yaw,marker.header.frame_id
 	      if abs(roll)<0.25 and abs(pitch)<0.25:
-		  print '*** roughly level ***',
+		  #print '*** roughly level ',roll,pitch,' ***'
 		  marker_topic.publish(ps)
-		  pose = target_from_marker(ps)
-		  finalpose = lift_in_base_frame(pose,0.2)
-		  # HOVER POSITION - this is a truly magic number!
-		  # - works well for 0.15, not nearly so well for 0.1
-		  abovepose = lift_in_base_frame(pose,0.15)
-		  grabpose = lift_in_base_frame(pose,-0.02)
-		  gripper.open(block=True)
-		  resp = solve_move_trac('left', abovepose)
-		  resp = solve_move_trac('left', grabpose)
-		  gripper.close(block=True)
-		  time.sleep(0.5)
-		  resp = solve_move_trac('left', finalpose)
-		  time.sleep(0.5)
-		  gripper.open(block=True)
-      if foundmarker:
-          print
+		  if marker.header.frame_id == 'reference/left_hand_camera':
+			  #print 'left'	
+			  poseglobal = target_from_marker(ps)
+			  markerglobal = marker
+			  since_left = 0
+		  else:
+			  since_left = since_left + 1
+			  if since_left > right_threshold:
+				  #print 'right'
+				  poseglobal = target_from_marker(ps)
+				  since_left = 0
+              #else:
+	          #print 'not level',roll,pitch
+  if not foundmarker:
+      poseglobal = None
+      markerglobal = None
+
+import time
+
+def pickup():
+    parm = baxter_interface.Limb('left')
+    global poseglobal
+    global markerglobal
+    gripper.open(block=True)
+    pose = poseglobal
+    if pose == None:
+        return
+    print 'move to hover...'
+    abovepose = lift_in_base_frame(pose,0.05)
+    abovepose_soln = trac_ik_solve('left',abovepose,posn_tol=0.01)
+    resp = solve_move_trac('left', abovepose)
+    if not resp:
+        print "can't go to hover"
+        return
+    print '=== at hover ==='
+    pose = poseglobal
+    if pose == None:
+        print "lost block before pickup"
+	return
+    print 'do pre-grab...'
+    pregrabpose = lift_in_base_frame(pose,0.03)
+    pregrabpose_soln = trac_ik_solve('left',pregrabpose,posn_tol=0.01)
+    finalpose = lift_in_base_frame(pose,0.13)
+    finalpose_soln = trac_ik_solve('left',finalpose,posn_tol=0.01)
+    if not finalpose_soln or not pregrabpose_soln:
+        print "no solution/s for pre-grab or final pose"
+	return
+    #make_move_trac(pregrabpose_soln, 'left', 0.5)
+    last = time.time()
+    while True:
+        if time.time() > (last + 10.0):
+	    print '**** lost marker, abort ****'
+	    make_move_trac(abovepose_soln, 'left', 0.5)
+            return
+        m = markerglobal
+        p = poseglobal
+        if m!= None and m.header.frame_id == 'reference/left_hand_camera':
+	    last = time.time()
+	    marker_pose = m.pose.pose
+	    ps = PoseStamped(
+			header=m.header,
+			pose=m.pose.pose,
+		    )
+            mg = translate_frame(ps,'left_gripper_vx')
+            pg = translate_frame(p,'left_gripper_vx')
+	    # target z-positions for marker grab and pre-grab (in gripper frame)
+            # reach 2cm deeper than marker
+            # wait just above
+            #print "*** servo target (camera frame)",m.pose.pose.position
+            print "*** servo target (left_gripper_vx):",mg.pose.position
+            nr_moves = 10
+            #dx = (mg.pose.position.x - 0.005)
+            dx = (mg.pose.position.x - 0.02) / 8
+            dy = mg.pose.position.y / 7
+            dz = mg.pose.position.z / 10
+	    if (
+		#abs(mg.pose.position.x)<0.02 and
+		#abs(mg.pose.position.y)<0.02 and
+	        # want marker z to be slightly below (+ve)
+		mg.pose.position.z < -0.04
+	        ):
+		print '=== ready to grab ==='
+                break
+	    if (
+		abs(mg.pose.position.x)>0.02 or
+		abs(mg.pose.position.y)>0.002
+	        ):
+		print '*** out of range ***'
+                dz = - mg.pose.position.z / 10
+	    if (
+		(abs(mg.pose.position.x)>0.02 or
+		abs(mg.pose.position.y)>0.002) and
+                abs(mg.pose.position.z)<0.04
+	        ):
+		print '*** way out of range, low ***'
+                dz = - mg.pose.position.z / 5
+	    if (
+		abs(mg.pose.position.x)<0.02 and
+		abs(mg.pose.position.y)<0.002 and
+	        # want marker z to be slightly below (+ve)
+		abs(mg.pose.position.z)<0.03
+	        ):
+		print '--- centred at pre-grab; moving down to grab ---'
+	    #time.sleep(1)
+            #if mg.pose.position.x > 0:
+            #    dx = 0.003
+            #if mg.pose.position.x < 0:
+            #    dx = -0.003
+            #if mg.pose.position.y > 0:
+            #    dy = 0.003
+            #if mg.pose.position.y < 0:
+            #    dy = -0.003
+            print 'dx,dy,dz',dx,dy,dz
+            pregrabpose = translate_in_frame(pregrabpose,'left_gripper_vx', dx, dy, dz)
+            #print 'pregrabpose',pregrabpose
+            #print 'p',pg
+            #targetpose = set_orientation(translate_frame(pregrabpose,'base'))
+            ## Hack orientation based on marker's
+            pregrabpose.pose.orientation = pg.pose.orientation
+            print 'solving...'
+            soln = trac_ik_solve('left', pregrabpose, posn_tol=0.001)
+	    print '...solved. Moving...'
+	    if soln:
+		cmd = make_move_cmd_trac(soln, 'left', 0.2)
+		#parm.set_joint_positions(cmd) 
+		#parm.move_to_joint_positions(cmd,threshold=0.01) 
+		parm.move_to_joint_positions(cmd) 
+                time.sleep(2.0)
+		print 'moved'
+                if mg.pose.position.z < (dz - 0.004):
+                    print 'grab???'
+                    break
+	    else:
+		print 'servo solve failed'
+	        #make_move_trac(abovepose_soln, 'left', 0.5)
+                #return
+    time.sleep(0.1)
+    gripper.close(block=True)
+    time.sleep(0.1)
+    make_move_trac(finalpose_soln, 'left', 0.5)
+    gripper.open(block=True)
 
 rospy.Subscriber('/ar_pose_marker', AlvarMarkers, callback, queue_size=1)
 
 #time.sleep(240)
-rospy.spin()
+#rospy.spin()
+
+while True:
+    pickup()
