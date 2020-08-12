@@ -7,12 +7,12 @@
   <param name="gui_publish_rate" value="10.0"/>
   <param name="use_sim_time" value="true"/>
   <param name="save_pose_rate" value="0.5"/>
-  <param name="laser_max_beams" value="50"/>
+  <param name="laser_max_beams" value="100"/>
   <param name="laser_min_range" value="0.5"/>
   <param name="laser_max_range" value="50"/>
   <param name="min_particles" value="500"/>
   <param name="max_particles" value="5000"/>
-  <param name="kld_err" value="0.01"/>
+  <param name="kld_err" value="0.05"/>
   <param name="kld_z" value="0.99"/>
   <param name="odom_alpha1" value="0.2"/>
   <param name="odom_alpha2" value="0.2"/>
@@ -28,7 +28,7 @@
   <param name="laser_lambda_short" value="0.1"/>
   <param name="laser_model_type" value="likelihood_field"/>
   <!--- <param name="laser_model_type" value="beam"/> -->
-  <param name="laser_likelihood_max_dist" value="20.0"/>
+  <param name="laser_likelihood_max_dist" value="30.0"/>
   <param name="update_min_d" value="0.1"/>
   <param name="update_min_a" value="0.5"/>
   <param name="odom_frame_id" value="odom"/>
