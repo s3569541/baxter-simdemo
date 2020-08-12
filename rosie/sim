@@ -76,5 +76,5 @@ rostopic pub /rosie/sim/events std_msgs/String 'Sim started' -1
 
 while true
 do
-  sleep 60 || cleanup
+  sleep 3600 || cleanup
 done
