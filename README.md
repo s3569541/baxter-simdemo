@@ -92,13 +92,13 @@ Move Rosie to where the head camera is pointed at the large block with the marke
 
 Connect to master container:
 
-`docker-exec -it vxlab-rosie bash`
+`docker exec -it vxlab-rosie bash`
 
 then
 
 `./blue-minimal` (for model)
 
-`docker-exec -it vxlab-blue bash`
+`docker exec -it vxlab-blue bash`
 
 then
 
