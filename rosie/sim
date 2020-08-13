@@ -51,18 +51,20 @@ echo "Tucking arms..."
 ~/rosie/tuck_presim
 rostopic pub /rosie/sim/events std_msgs/String 'Arms pre-tucked' -1
 
+sleep 3
+echo "Unpausing..."
+rosservice call gazebo/unpause_physics
+
+sleep 1
 echo "Spawning objects..."
 ~/rosie/spawn
 rostopic pub /rosie/sim/events std_msgs/String 'Objects spawned' -1
-
-echo "Unpausing..."
-rosservice call gazebo/unpause_physics
 
 ~/rosie/await_simulator_is_loaded.py || cleanup
 
 rostopic pub /rosie/sim/events std_msgs/String 'Sim started' -1
 
-~/rosie/untuck
+~/rosie/untuck || exit 1
 
 # center head
 ~/rosie/headcentre &
