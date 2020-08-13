@@ -1,32 +1,36 @@
 #!/bin/bash
 
-rosservice call /gazebo/delete_model cafe_table1
-rosservice call /gazebo/delete_model cafe_table2
-rosservice call /gazebo/delete_model marker0
-rosservice call /gazebo/delete_model marker_s0
+# Gazebo / Baxter drivers do not respond well to malformed deletes ... ?
+# Appears to cause failure with error: "[FATAL] [1597221904.084218604]: The internal stop and start request lists are not empty at the beginning of the swithController() call. This should not happen."
 
-rosservice call /gazebo/delete_model marker_table
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markertable/model.sdf -model marker_table -x 2.0 -y 0.0 -z 0.0
+function delete_model() {
+  modelname=$1	 
+  echo "Checking if model $modelname needs to be deleted"
+  { ~/rosie/get_gazebo_models.py | egrep "'${modelname}'" ; } && echo Deleting $modelname && rosservice call /gazebo/delete_model $modelname
+}
 
-#rosrun gazebo_ros spawn_model -sdf -file ~/rosie/cafe_table/model.sdf -model cafe_table1 -x 2.5 -y -0.5 -z 0.0
+delete_model marker5
+delete_model marker4
+delete_model marker3
+delete_model marker2
+delete_model marker1
+delete_model table1
+
+#rosservice call /gazebo/delete_model marker5
+#rosservice call /gazebo/delete_model marker1
+#rosservice call /gazebo/delete_model marker2
+#rosservice call /gazebo/delete_model marker3
+#rosservice call /gazebo/delete_model marker4
+
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markertable/model.sdf -model table1 -x 2.0 -y 0.0 -z 0.0
 
 # large block
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock50_obj/model.sdf -model marker0 -x 3.0 -y -0.5 -z 0.9
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_5_obj/model.sdf -model marker5 -x 3.0 -y -0.0 -z 0.9
 
-# small block
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblockgrab_obj/model.sdf -model marker_s0 -x 2.1 -y -0.5 -z 0.9
+# small blocks
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1_obj/model.sdf -model marker1 -x 1.3 -y 0.0 -z 1
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_2_obj/model.sdf -model marker2 -x 1.3 -y -0.1 -z 1
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_3_obj/model.sdf -model marker3 -x 1.3 -y 0.1 -z 1
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4_obj/model.sdf -model marker4 -x 1.3 -y 0.2 -z 1
 
-rosservice call /gazebo/delete_model marker1
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1_obj/model.sdf -model marker1 -x 2.6 -y 0.0 -z 2
-
-rosservice call /gazebo/delete_model marker2
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_2_obj/model.sdf -model marker2 -x 2.6 -y -0.1 -z 2
-
-rosservice call /gazebo/delete_model marker3
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_3_obj/model.sdf -model marker3 -x 2.6 -y 0.1 -z 2
-
-rosservice call /gazebo/delete_model marker4
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4_obj/model.sdf -model marker4 -x 2.6 -y 0.2 -z 2
-
-rosservice call /gazebo/delete_model marker5
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_5_obj/model.sdf -model marker5 -x 2.6 -y -0.2 -z 2
+###rosrun gazebo_ros spawn_model -sdf -file ~/rosie/cafe_table/model.sdf -model cafe_table1 -x 2.5 -y -0.5 -z 0.0

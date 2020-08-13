@@ -1,4 +1,16 @@
+#!/bin/bash
 #rosrun baxter_tools enable_robot.py -r
 #rosrun baxter_tools enable_robot.py -e
 #export ROS_NAMESPACE='/rosie'
-rosrun baxter_tools tuck_arms.py -u && echo VXLab sim: untuck successful
+
+failcount=0
+until rosrun baxter_tools tuck_arms.py -u
+do
+  failcount=`expr $failcount + 1`
+  echo "Untuck attempt $failcount failed"
+  echo 'Retrying untuck'
+  [[ "$failcount" == 20 ]] && { echo 'Untuck failed too many times' ; exit 1 ; }
+  sleep 1
+done
+echo 'Untuck succeeded'
+
