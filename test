@@ -3,8 +3,9 @@
 git checkout blue-mir100
 git pull
 
-#docker rm -f gazebo vxlab-rosie-nav novnc display2 alvar-head alvar-right
-#docker-compose build && docker-compose -f docker-compose.yml -f docker-compose.test.yml up --force-recreate -d
+# In case docker-compose does not kill all containers...
+# docker rm -f gazebo vxlab-rosie-nav novnc display2 alvar-head alvar-right
+
 docker-compose down --remove-orphans && docker-compose build && docker-compose -f docker-compose.yml up --force-recreate -d && \
   echo running tests && \
   docker-compose -f docker-compose.yml -f docker-compose.test.yml up --force-recreate -d test
