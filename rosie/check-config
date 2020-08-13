@@ -1,6 +1,18 @@
+#!/bin/bash
+
+case $BAXTER_ONLY
+in
+
+true)
+;;
+
+*)
 echo plugin: `grep MobilityBasePlugin ~/.ros/log/latest/* | grep fast`
 echo above should agree with below ...
 rosparam get /mobility_base/robot_description > robot_description
 echo model: `grep fast robot_description`
 echo should be 50 ...
 grep mass robot_description | head -1
+;;
+
+esac

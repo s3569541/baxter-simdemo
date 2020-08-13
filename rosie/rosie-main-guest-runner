@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ~/rosie/xsetup
+
 while true
 do
   sleep 10

@@ -120,3 +120,5 @@ A separate rviz is required for blue, launched from the vxlab-blue container.
 Some improvements are suggested at: http://wiki.ros.org/docker/Tutorials/GUI
 
 - Several containers mount a docker volume under "~/rosie". Thus, changes to this directory are persistent and cause changes to the directory with the same name on the container host. Be careful! Take backups!
+
+- baxter-only: run `BAXTER_ONLY=true docker-compose up`. When using rviz, use "Robot Description:  /robot_description" (instead of /mobility_base/robot_description). The alvar scripts may need to be modified in a similar way.

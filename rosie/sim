@@ -4,7 +4,7 @@ source ~/rosie/rosenv.gazebo.bash
 
 set -xv
 
-source ~/rosie/entry
+source ~/rosie/xsetup
 
 #cd ~/ws_baxter
 
@@ -35,7 +35,14 @@ trap cleanup EXIT SIGINT SIGTERM
 
 #export LIBGL_ALWAYS_INDIRECT=0
 export QT_X11_NO_MITSHM=1
-roslaunch ~/rosie/vxlab_sim.launch baxter:=true paused:=true &
+
+case $BAXTER_ONLY in
+  "true") roslaunch baxter_gazebo baxter_world.launch &
+  ;;
+  *) roslaunch ~/rosie/vxlab_sim.launch baxter:=true paused:=true &
+  ;;
+esac
+
 ROS_PID=$!
 echo "**** roslaunch PID is $ROS_PID ****"
 

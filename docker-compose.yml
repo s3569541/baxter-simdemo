@@ -36,8 +36,9 @@ services:
           source: /dev/dri
           target: /dev/dri
         environment:
-          DISPLAY: novnc:0
-          #DISPLAY: :0
+          DISPLAY: "novnc:0"
+          BAXTER_ONLY:
+        entrypoint: ["/root/rosie/gazebo-guest-runner"]
     # separate misc command and control functions from simulation itself for testing etc.
     main:
         container_name: main
@@ -50,8 +51,16 @@ services:
         - type: bind
           source: ./rosie
           target: /root/rosie
+        - type: bind
+          source: /dev/shm
+          target: /dev/shm
+        - type: bind
+          source: /tmp/.X11-unix
+          target: /tmp/.X11-unix
+        - type: bind
+          source: /dev/dri
+          target: /dev/dri
         entrypoint: ["/root/rosie/rosie-main-guest-runner"]
- 
     vxlab-rosie-nav:
         container_name: vxlab-rosie-nav
         build:

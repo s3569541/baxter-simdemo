@@ -3,5 +3,6 @@
 while true
 do
   ~/rosie/sim
-  sleep 10
+  sleep 5
+  #sleep 3600
 done

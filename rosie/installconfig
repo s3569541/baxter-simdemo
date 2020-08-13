@@ -6,6 +6,8 @@ ln -s ~/rosie/rviz_settings ~/.rviz
 # Must be loaded into gazebo during main sim startup for /blue/robot_description
 cp ~/rosie/sick_s300.urdf.xacro /root/mir_ws/src/mir_robot/mir_description/urdf/include/sick_s300.urdf.xacro
 
+cp ~/rosie/baxter_world.launch /root/ws_baxter/src/baxter_simulator/baxter_gazebo/launch/baxter_world.launch
+
 cp ~/rosie/MobilityBasePlugin.cpp /root/mb_ws/src/mobility_base_simulator/mobility_base_gazebo_plugins/src/MobilityBasePlugin.cpp
 
 cp ~/rosie/baxter_sim_controllers.yaml /root/ws_baxter/src/baxter_simulator/baxter_sim_hardware/config/baxter_sim_controllers.yaml
