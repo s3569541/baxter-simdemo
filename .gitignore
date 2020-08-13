@@ -14,5 +14,7 @@ rosie/build
 rosie/devel
 rosie/old
 .cmd
-rosie/rosenv.local.bash
-rosie/robot_description
+rosenv.local.bash
+*.pyc
+robot_description
+*.bag
