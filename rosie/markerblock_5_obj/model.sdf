@@ -1,14 +1,14 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
-  <model name="markerblock50">
+  <model name="markerblock_5">
     <pose>0 0 0 0 0 0</pose>
-    <link name="box">
+    <link name="mb5_box">
       <pose>0 0 0 0 0 0</pose>
       <collision name="collision">
         <geometry>
           <mesh>
             <uri>file:///root/rosie/markerblock_5_obj/meshes/alvar5.dae</uri>
-            <scale>0.02 0.02 0.02</scale>
+            <scale>0.2 0.2 0.2</scale>
           </mesh>
         </geometry>
       </collision>
@@ -16,7 +16,7 @@
         <geometry>
           <mesh>
             <uri>file:///root/rosie/markerblock_5_obj/meshes/alvar5.dae</uri>
-            <scale>0.02 0.02 0.02</scale>
+            <scale>0.2 0.2 0.2</scale>
           </mesh>
         </geometry>
         <material>
