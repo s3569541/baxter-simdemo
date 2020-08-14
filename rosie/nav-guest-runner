@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# We should not rely on .bashrc being run and importing appropriate rosenv scripts: it is for interactive shells only
+source ~/rosie/rosenv.nav.bash
+
 echo Waiting 100s for master to start
 sleep 45
 

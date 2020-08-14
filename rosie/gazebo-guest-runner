@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source ~/rosie/rosenv.gazebo.bash
+source ~/rosie/xsetup
+
 while true
 do
   ~/rosie/sim
