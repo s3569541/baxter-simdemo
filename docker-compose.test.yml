@@ -11,4 +11,12 @@ services:
         - type: bind
           source: ./rosie
           target: /root/rosie
-        entrypoint: bash -c "source ~/.bashrc ; ~/rosie/test"
+        entrypoint: bash -c "source ~/.bashrc ; ~/rosie/run-tests"
+        environment:
+        - TESTS=${SIMTESTS}
+
+networks:
+    vxlab:
+      external: true
+      name: vxlab
+
