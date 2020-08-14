@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo run-tests... SIMTESTS $SIMTESTS TESTS $TESTS
+echo run-tests... TESTS $TESTS
 
 # set SCRIPTS to the directory containing this script
 SOURCE="${BASH_SOURCE[0]}"

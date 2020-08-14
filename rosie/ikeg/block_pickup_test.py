@@ -10,7 +10,9 @@ import threading
 import Queue
 import rospy
 from std_msgs.msg import String
-from ar_track_alvar_msgs.msg import AlvarMarkers
+import sys
+#from ar_track_alvar_msgs.msg import AlvarMarkers
+from gazebo_msgs.srv import GetModelState
 
 #import tf
 
@@ -458,17 +460,25 @@ gripper.set_holding_force(100)
 gripper.close()
 gripper.open()
 
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.49, 0.0, 0.0, 0), frame_id='base'))
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.49, 0.0, -0.1, 0), frame_id='base'))
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.49, 0.0, -0.16, 0), frame_id='base'))
+solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.5, 0.0, 0.0, 0), frame_id='base'))
+solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.5, 0.0, -0.1, 0), frame_id='base'))
+solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.5, 0.0, -0.16, 0), frame_id='base'))
 
-rospy.sleep(1.0)
-gripper.close()
-gripper.open()
 gripper.close()
 rospy.sleep(2.0)
 
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.49, 0.0, 0.0, 0), frame_id='base'))
+solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.5, 0.0, 0.0, 0), frame_id='base'))
 
-#while True:
-#    rospy.sleep(1.0)
+model_coordinates = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+coords = model_coordinates('marker1', 'base')
+pose = coords.pose
+
+if coords.success:
+  pos = pose.position
+  print('pos',pos)
+  # note: we expect the cube to be approx 5cm below the tool 0 position
+  if (abs(pos.x - 0.5) < 0.02 and abs(pos.y) < 0.02 and abs(pos.z + 0.05) < 0.02):
+    print 'success'
+    sys.exit(0)
+print 'failure'
+sys.exit(1)

@@ -13,6 +13,9 @@ do
 done
 
 cd ~/rosie/ikeg
+
 ./block_pickup_test_reset.py
 ~/rosie/spawn
 ./block_pickup_test.py
+
+# check: the markerblock should be roughly at the same position as the gripper after pickup

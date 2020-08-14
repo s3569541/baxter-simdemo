@@ -1,0 +1,3 @@
+#!/bin/bash
+
+~/rosie/navgoal/move_to_door.py
