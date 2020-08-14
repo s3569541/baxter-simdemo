@@ -441,10 +441,10 @@ def make_pose_stamped(pos,frame_id='base', orientation=Quaternion(x=0, y=1, z=0,
 
 print 'init gripper'
 mylimb = 'left'
-gripper = baxter_interface.Gripper(mylimb, CHECK_VERSION)
-gripper.close()
+#gripper = baxter_interface.Gripper(mylimb, CHECK_VERSION)
+#gripper.close()
 #gripper.calibrate()
-gripper.open()
+#gripper.open()
 ##gripper.calibrate()
 #print 'init gripper done'
 
@@ -452,11 +452,6 @@ gripper.open()
 leftpos = Vectors.V4D(0.5, -0.01, 0.3, 0)
 
 solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.47, -0.01, 0.4, 0), frame_id='base'))
-rospy.sleep(1.0)
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.47, -0.01, 0.2, 0), frame_id='base'))
-gripper.close()
-rospy.sleep(1.0)
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.47, -0.01, 0.6, 0), frame_id='base'))
 
 #while True:
 #    rospy.sleep(1.0)
