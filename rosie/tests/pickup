@@ -13,6 +13,6 @@ do
 done
 
 cd ~/rosie/ikeg
-./block_pickup_test.py
-~/rosie/spawn
 ./block_pickup_test_reset.py
+~/rosie/spawn
+./block_pickup_test.py
