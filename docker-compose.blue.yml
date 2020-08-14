@@ -1,0 +1,21 @@
+version: "3.5"
+services:
+    vxlab-blue:
+        container_name: vxlab-blue
+        build:
+          context: blue-sim
+          dockerfile: Dockerfile-melodic
+          #network: host
+        networks:
+          vxlab:
+        volumes:
+        - type: bind
+          source: ./blue-sim/blue
+          target: /root/mir100
+        environment:
+          DISPLAY: novnc:0
+        entrypoint: ["sh", "-c", "sleep 21000"]
+networks:
+    vxlab:
+      external: true
+      name: vxlab
