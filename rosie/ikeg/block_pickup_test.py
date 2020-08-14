@@ -452,19 +452,22 @@ while not success:
     print 'OSError'
     success = False
 
-rospy.sleep(3.0)
-gripper.close()
-#gripper.calibrate()
 gripper.open()
-##gripper.calibrate()
-
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.47, -0.0, 0.0, 0), frame_id='base'))
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.47, -0.0, -0.1, 0), frame_id='base'))
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.47, -0.0, -0.2, 0), frame_id='base'))
-
+gripper.calibrate()
+gripper.set_holding_force(100)
 gripper.close()
+gripper.open()
 
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.47, -0.01, 0.6, 0), frame_id='base'))
+solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.49, -0.0, 0.0, 0), frame_id='base'))
+solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.49, -0.01, -0.16, 0), frame_id='base'))
+
+rospy.sleep(1.0)
+gripper.close()
+gripper.open()
+gripper.close()
+rospy.sleep(2.0)
+
+solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.49, -0.0, 0.0, 0), frame_id='base'))
 
 #while True:
 #    rospy.sleep(1.0)
