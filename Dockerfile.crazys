@@ -1,0 +1,114 @@
+########################################################################
+# 
+# Minimal envt to simulate Baxter, Dataspeed Mobility Base and MIR100
+# in single Gazebo session.
+# The minimal requirements in practice work out to be custom drivers, mostly.
+#
+########################################################################
+
+#FROM osrf/ros:melodic-desktop-full
+FROM ros:melodic-ros-core
+MAINTAINER Ian Peake ian.peake@rmit.edu.au
+
+COPY 02proxy /etc/apt/apt.conf.d/02proxy
+
+# Fix ROS keys
+RUN apt-key del 421C365BD9FF1F717815A3895523BAEEB01FA116
+RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+
+# Update apt because previous images clear this cache
+# Commands are combined in single RUN statement with "apt/lists" folder removal to reduce image size
+RUN apt update && \
+    # Install some base dependencies
+    apt install -y \
+	iproute2 host wget less sudo vim-tiny iputils-ping python-wstool build-essential
+
+# Ensure Ubuntu and ROS up to date
+RUN apt-get update && apt -y dist-upgrade
+
+ENV TERM xterm
+
+################
+#
+# Baxter
+#
+################
+
+# Setup catkin workspace
+ENV CATKIN_WS=/root/ws_baxter
+RUN mkdir -p $CATKIN_WS/src
+WORKDIR $CATKIN_WS/src
+
+#COPY baxter_simulator_emarolab.rosinstall baxter_simulator.rosinstall
+COPY baxter_simulator_dougparkarosa.rosinstall baxter_simulator.rosinstall
+#
+# https://hub.docker.com/r/davetcoleman/baxter_simulator/dockerfile
+# vicariousinc/baxter-simulator:kinetic
+
+# Download source code
+RUN wstool init . && \
+    #wstool merge https://raw.githubusercontent.com/vicariousinc/baxter_simulator/kinetic-gazebo7/baxter_simulator.rosinstall && \
+    wstool merge baxter_simulator.rosinstall && \
+    wstool update
+
+RUN apt-get -qq update && \
+    # Install some base dependencies
+    apt-get -qq install -y \
+        # Required for installing dependencies
+        python-rosdep \
+        # Preferred build tool
+        python-catkin-tools
+    # Download all dependencies
+    
+#  remove this line if it breaks install
+RUN [ -f /etc/ros/rosdep/sources.list.d/20-default.list ] || rosdep init
+RUN rosdep update
+
+COPY 02proxy /etc/apt/apt.conf.d/02proxy
+
+#RUN rosdep install -r -y --from-paths . --ignore-src --skip-keys="gazebo libgazebo7 libgazebo7-dev" --rosdistro ${ROS_DISTRO} --as-root=apt:false && \
+RUN rosdep install -r -y --from-paths . --ignore-src --skip-keys="gazebo libgazebo7 libgazebo7-dev" && \
+    # Clear apt-cache to reduce image size
+    rm -rf /var/lib/apt/lists/*
+
+# Replacing shell with bash for later docker build commands
+RUN mv /bin/sh /bin/sh-old && \
+    ln -s /bin/bash /bin/sh
+
+# Build repo
+WORKDIR $CATKIN_WS
+
+ENV PYTHONIOENCODING UTF-8
+RUN catkin config --extend /opt/ros/${ROS_DISTRO} --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    # Status rate is limited so that just enough info is shown to keep Docker from timing out, but not too much
+    # such that the Docker log gets too long (another form of timeout)
+    catkin build --jobs 16 --limit-status-rate 0.001 --no-notify
+
+#
+# For debugging
+#
+
+RUN apt-get update && apt -y install ros-melodic-catkin
+
+RUN mkdir -p /root/catkin_ws/src
+WORKDIR /root/catkin_ws/src
+RUN source /opt/ros/melodic/setup.bash && catkin_init_workspace  # initialize your catkin workspace
+WORKDIR /root/catkin_ws
+RUN catkin init
+WORKDIR /root/catkin_ws/src
+RUN git clone -b dev/ros-melodic https://github.com/gsilano/CrazyS.git
+RUN git clone -b med18_gazebo9 https://github.com/gsilano/mav_comm.git
+WORKDIR /root/catkin_ws
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN sudo apt update && sudo apt install -y ros-melodic-geographic-msgs ros-melodic-uuid-msgs ros-melodic-geographic-msgs ros-melodic-mavros-msgs ros-melodic-uuid-msgs
+RUN sudo apt update && rosdep install --from-paths src -i -y
+RUN sudo apt update && sudo apt install -y ros-melodic-rqt-rotors ros-melodic-rotors-comm ros-melodic-mav-msgs ros-melodic-rotors-control
+RUN sudo apt update && sudo apt install -y ros-melodic-rotors-gazebo ros-melodic-rotors-evaluation ros-melodic-rotors-joy-interface
+RUN sudo apt update && sudo apt install -y ros-melodic-rotors-gazebo-plugins ros-melodic-mav-planning-msgs ros-melodic-rotors-description ros-melodic-rotors-hil-interface
+RUN source /opt/ros/melodic/setup.bash && rosdep update
+RUN source /opt/ros/melodic/setup.bash && catkin build
+
+#ENTRYPOINT ["/root/rosie/rosie-sim-guest-runner"]
+#CMD [""]
