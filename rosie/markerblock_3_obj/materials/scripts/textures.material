@@ -1,4 +1,4 @@
-material markerblock/markers_alvar3
+material markerblock/markers_alvar4
 {
   technique
   {
@@ -6,7 +6,7 @@ material markerblock/markers_alvar3
     {
       texture_unit
       {
-        texture MarkerData_99999_10_11_12_13_14_15_99998.png
+        texture MarkerData_99999_20_21_22_23_24_25_99998.png
       }
     }
   }

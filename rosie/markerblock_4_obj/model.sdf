@@ -2,21 +2,21 @@
 <sdf version="1.6">
   <model name="markerblock_4">
     <pose>0 0 0 0 0 0</pose>
-    <link name="mb4_box">
+    <link name="mb5_box">
       <pose>0 0 0 0 0 0</pose>
       <collision name="collision">
         <geometry>
           <mesh>
-            <uri>file:///root/rosie/markerblock_4_obj/meshes/alvar4.dae</uri>
-            <scale>0.02 0.02 0.02</scale>
+            <uri>file:///root/rosie/markerblock_4_obj/meshes/alvar5.dae</uri>
+            <scale>0.2 0.2 0.2</scale>
           </mesh>
         </geometry>
       </collision>
       <visual name="visual">
         <geometry>
           <mesh>
-            <uri>file:///root/rosie/markerblock_4_obj/meshes/alvar4.dae</uri>
-            <scale>0.02 0.02 0.02</scale>
+            <uri>file:///root/rosie/markerblock_4_obj/meshes/alvar5.dae</uri>
+            <scale>0.2 0.2 0.2</scale>
           </mesh>
         </geometry>
         <material>
