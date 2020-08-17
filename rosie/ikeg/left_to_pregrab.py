@@ -360,24 +360,7 @@ def make_pose_stamped(pos,frame_id='base', orientation=Quaternion(x=0, y=1, z=0,
 ### Example proper
 ###
 
-print 'init gripper'
 mylimb = 'left'
-
-success = False
-while not success:
-  try:
-    gripper = baxter_interface.Gripper(mylimb, CHECK_VERSION)
-    print 'gripper initialised'
-    success = True
-  except OSError:
-    print 'OSError'
-    success = False
-
-gripper.open()
-gripper.calibrate()
-gripper.set_holding_force(100)
-gripper.close()
-gripper.open()
 
 model_coordinates = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
 coords = model_coordinates('marker1', 'baxter::base')
@@ -388,5 +371,5 @@ else:
   print('could not get marker1 position wrt base frame')
 pos = blockpose.position
 
-#solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.19), frame_id='base'))
-solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.1), frame_id='base'))
+# seems to be a sweet spot for vision
+solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.11), frame_id='base'))

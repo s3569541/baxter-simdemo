@@ -167,17 +167,32 @@ def make_pose_stamped(pos,frame_id='base', orientation=Quaternion(x=0, y=1, z=0,
   )
 
 avgspos = [None,None,None,None,None,None,None]
+
+## marker id -> frame id -> {avg(marker pose in base frame):, err: int(camera to block dist) -> int(distance)}
 avgmarkerpos = {}
 
 def pairavg(a,b):
     return (a + b) / 2
 
-def rnd(v):
+def round(v):
     return math.floor(v * 1000) / 1000
 
 def dst(a,b):
     diff = abs(a - b)
-    return rnd(diff)
+    return round(diff)
+
+# ensure that dict contains key by priming with val if necessary
+# return dict[key]
+def init_key(dict,key,val):
+  if not (key in dict):
+    dict[key]=val
+  return dict[key]
+
+def square(v1):
+  return v1*v1
+
+def dist3d(pt1,pt2):
+  return round(math.sqrt(square(pt1.x - pt2.x) + square(pt1.y - pt2.y) + square(pt1.z - pt2.z)))
 
 def marker_callback(data):
   global avgpos
@@ -185,21 +200,30 @@ def marker_callback(data):
   global avgmarkerpos
   if data.markers:
       for marker in data.markers:
-          if marker.header.frame_id != 'head_camera':
-              blocknr = int(marker.id / 10) + 1
-              print 'block',blocknr,'marker',marker.id,'frame',marker.header.frame_id
-              print '- marker',marker.id
-              basepose = translate_frame(make_pose_stamped(marker.pose.pose.position,marker.header.frame_id), 'base')
+          frame = marker.header.frame_id
+          blocknr = int(marker.id / 10) + 1
+          if frame != 'head_camera' and blocknr <= 4:
+              #print 'block',blocknr,'marker',marker.id,'frame',frame
+              #print '- marker',marker.id
+              basepose = translate_frame(make_pose_stamped(marker.pose.pose.position,frame), 'base')
               pos = basepose.pose.position
-              #print '- pos',pos
-              if not (marker.id in avgmarkerpos):
-                  avgmarkerpos[marker.id] = pos
-              avgpos = avgmarkerpos[marker.id]
-              avgmarkerpos[marker.id] = Point(x = pairavg(avgpos.x, pos.x), y = pairavg(avgpos.y, pos.y), z = pairavg(avgpos.z, pos.z))
+	      framedict=init_key(avgmarkerpos,marker.id,{})
+	      d=init_key(framedict,frame,{})
+              avgpos = init_key(d,'avg',pos)
+              err=init_key(d,'err',{})
+              d['avg'] = Point(x = pairavg(avgpos.x, pos.x), y = pairavg(avgpos.y, pos.y), z = pairavg(avgpos.z, pos.z))
+              avgpos = d['avg']
               blockpos = blockspos[blocknr] 
-              print '- average pos',avgpos
-              print '- block pos',blockpos
-              print '- error',dst(avgpos.x,blockpos.x),dst(avgpos.y,blockpos.y),dst(avgpos.z,blockpos.z)
+              #print '- average pos',avgpos
+              #print '- block pos',blockpos
+              campos = translate_frame(make_pose_stamped(marker.pose.pose.position,frame), frame).pose.position
+              camdist = dist3d(Point(x=0,y=0,z=0),campos)
+              err[camdist] = dist3d(avgpos,blockpos)
+              if blocknr == 1 and frame == 'left_hand_camera':
+                  #print 'block',blocknr,'marker',marker.id,'frame',frame #,'avg pos',avgpos,'block pos',blockpos
+                  #print '- dist from camera',camdist,'error',err[camdist]
+                  print camdist,',',err[camdist]
+                  #print '- all error',err
 
 gazebo_pos_markerblocks()
 rospy.Subscriber('/ar_pose_marker', AlvarMarkers, marker_callback, queue_size=1)
