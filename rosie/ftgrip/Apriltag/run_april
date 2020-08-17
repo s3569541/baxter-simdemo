@@ -1,0 +1,1 @@
+docker run --network vxlab -d apriltag /bin/bash

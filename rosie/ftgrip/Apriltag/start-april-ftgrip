@@ -1,0 +1,6 @@
+#!/bin/bash
+export ROS_MASTER_URI=http://10.42.1.254:11311
+export ROS_IP=`ip -4 addr show eth0 | grep -oP "(?<=inet ).*(?=/)"`
+
+source devel_isolated/setup.bash
+roslaunch src/apriltag_ros/apriltag_ros/launch/right_hand_detection.launch
