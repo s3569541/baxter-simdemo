@@ -93,7 +93,7 @@ def translate_pose_in_own_frame(ps,localname,dx,dy,dz):
   tf_buffer.set_transform(m,"")
   return translate_in_frame(ps,localname,dx,dy,dz)
 
-# give PoseStamped ps in frame-of-refernce frame
+# translate PoseStamped arg:ps into Pose with respect to arg:frame
 def translate_frame(ps,frame):
     #print 'translate_frame',pose
     global tf_buffer
@@ -134,8 +134,8 @@ def trac_ik_solve(limb, ps):
                        #limb+"_wrist",
                        limb+"_gripper",
                        urdf_string=urdf_str)
-        #seed_state = [0.0] * ik_solver.number_of_joints
         seed_state = command
+        #seed_state = [0.0] * ik_solver.number_of_joints
         # canonical pose in local_base_frame
         #hdr = Header(stamp=rospy.Time.now(), frame_id=from_frame)
         #ps = PoseStamped(
@@ -282,31 +282,6 @@ def decide_increment(data):
 
     return inc;
 
-def clamp(p, inner, outer):
-    if p.x() > outer.x():
-        p = Vectors.V4D(outer.x(), p.y(), p.z(), p.w())
-    elif p.x() < inner.x():
-        p = Vectors.V4D(inner.x(), p.y(), p.z(), p.w())
-    if p.y() > outer.y():
-        p = Vectors.V4D(p.x(), outer.y(), p.z(), p.w())
-    elif p.y() < inner.y():
-        p = Vectors.V4D(p.x(), inner.y(), p.z(), p.w())
-    if p.z() > outer.z():
-        p = Vectors.V4D(p.x(), p.y(), outer.z(), p.w())
-    elif p.z() < inner.z():
-        p = Vectors.V4D(p.x(), p.y(), inner.z(), p.w())
-    if p.w() > outer.w():
-        p = Vectors.V4D(p.x(), p.y(), p.z(), outer.w())
-    elif p.w() < inner.w():
-        p = Vectors.V4D(p.x(), p.y(), p.z(), inner.w())
-
-    return p
-
-
-
-def jitter():
-    return random.uniform(-0.05, 0.05)
-
 # Quaternion -> Quaternion
 def normalize(quat):
  	quatNorm = math.sqrt(quat.x * quat.x + quat.y *
@@ -351,83 +326,27 @@ def lift_in_base_frame_old(ps,dz):
     ))
     return result
 
-# turn PoseStamped of a marker into target gripper pose
-# assuming marker is 'level'
-# was "hack_pose"
-def target_from_marker(ps):
-    #print 'hack_pose',ps
-    quaternion = (
-	ps.pose.orientation.x,
-	ps.pose.orientation.y,
-	ps.pose.orientation.z,
-	ps.pose.orientation.w)
-    # Leroy's guess
-    #q_rot = quaternion_from_euler(math.pi/2, math.pi, 0.0, 'rzyx')
-    q_rot = quaternion_from_euler(0.0, math.pi, math.pi/2)
-    #q_rot1 = quaternion_from_euler(0.0, 0.0, math.pi, 'rzyx')
-    #q_rot = quaternion_from_euler(math.pi/2, 0.0, 0.0, 'rzyx')
-    #q_new = quaternion_from_euler(0, 0, 0)
-    #q_new = quaternion
-    #q_new = quaternion_multiply(q_rot, quaternion)
-    q_new = quaternion_multiply(quaternion, q_rot)
-    pose_rot = PoseStamped(
-	header=ps.header,
-	pose=Pose(
-            position=Point(
-                x=ps.pose.position.x,
-                y=ps.pose.position.y,
-                z=ps.pose.position.z
-                ),
-            orientation=normalize(Quaternion(
-		x=q_new[0],
-		y=q_new[1],
-		z=q_new[2],
-		w=q_new[3]
-            ))
-	    # This won't work in camera frame
-	    #orientation=Quaternion(
-            #                 x=-0.0249590815779,
-            #                 y=0.999649402929,
-            #                 z=0.00737916180073,
-            #                 w=0.00486450832011)
-    ))
-    return pose_rot
-
-def right_arm(pos):
-    '''
-    Create goal Pose and call ik move
-    '''
-    pose_right = Pose(
-            position=Point(
-                x=pos.x(),
-                y=pos.y(),
-                z=pos.z(),
-                ),
-            orientation=Quaternion(
-                x=0,
-                y=1,
-                z=0,
-                w=0.5
-                ),
-            )
-    return pose_right
-
-
 def makepose(pos, orientation=Quaternion(x=0, y=1, z=0, w=0)):
     '''
     Create goal Pose and call ik move
     '''
     pose_right = Pose(
             position=Point(
-                x=pos.x(),
-                y=pos.y(),
-                z=pos.z(),
+                x=pos.x,
+                y=pos.y,
+                z=pos.z,
                 ),
 	    orientation=orientation,
             #orientation=Quaternion( x=0, y=1, z=0, w=0), # straight up and down
             #orientation=Quaternion( x=0.0462177008579, y=0.889249134439, z=0.0227669346795, w=0.454512450557), # toed-in for right camera
             )
     return pose_right
+
+def make_pose_stamped_from_pose(pose, frame_id='base'):
+  return PoseStamped(
+        header=Header(stamp=rospy.Time.now(), frame_id=frame_id),
+        pose=pose
+  )
 
 def make_pose_stamped(pos,frame_id='base', orientation=Quaternion(x=0, y=1, z=0, w=0)):
   return PoseStamped(
@@ -460,24 +379,31 @@ gripper.set_holding_force(100)
 gripper.close()
 gripper.open()
 
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.5, 0.0, 0.0, 0), frame_id='base'))
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.5, 0.0, -0.1, 0), frame_id='base'))
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.5, 0.0, -0.16, 0), frame_id='base'))
+model_coordinates = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+coords = model_coordinates('marker1', 'baxter::base')
+blockpose = coords.pose
+if coords.success:
+  print('block pose',blockpose)
+else:
+  print('could not get marker1 position wrt base frame')
+pos = blockpose.position
+
+solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.19), frame_id='base'))
+solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.04), frame_id='base'))
 
 gripper.close()
 rospy.sleep(2.0)
 
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.5, 0.0, 0.0, 0), frame_id='base'))
+solve_move_trac(mylimb, make_pose_stamped(Point(x=0.5, y=0.0, z=0.0,), frame_id='base'))
 
 model_coordinates = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-coords = model_coordinates('marker1', 'base')
-pose = coords.pose
-
+coords = model_coordinates('marker1', 'baxter::base')
 if coords.success:
+  pose = coords.pose
   pos = pose.position
   print('pos',pos)
   # note: we expect the cube to be approx 5cm below the tool 0 position
-  if (abs(pos.x - 0.5) < 0.02 and abs(pos.y) < 0.02 and abs(pos.z + 0.05) < 0.02):
+  if (abs(pos.x - 0.5) < 0.04 and abs(pos.y) < 0.04 and abs(pos.z + 0.05) < 0.04):
     print 'success'
     sys.exit(0)
 print 'failure'
