@@ -104,6 +104,19 @@ services:
           target: /root/rosie
         environment:
           LIMB: right_hand
+    alvar-left:
+        container_name: alvar-left
+        build:
+          context: alvar_marker_recognition
+          dockerfile: Dockerfile
+        networks:
+          vxlab:
+        volumes:
+        - type: bind
+          source: ./rosie
+          target: /root/rosie
+        environment:
+          LIMB: left_hand
 
     #
     #
