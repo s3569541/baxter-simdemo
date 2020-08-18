@@ -1,4 +1,4 @@
-material markerblock/markers_alvar3
+material markers_alvar_10_15
 {
   technique
   {
@@ -11,4 +11,3 @@ material markerblock/markers_alvar3
     }
   }
 }
-

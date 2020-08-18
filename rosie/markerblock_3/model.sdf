@@ -33,9 +33,9 @@
         </geometry>
         <material>
           <script>
-            <uri>model://markerblock_3/materials/scripts/textures.material</uri>
+            <uri>model://markerblock_3/materials/scripts/textures_alvar_markers_20_25.material</uri>
             <uri>model://markerblock_3/materials/textures</uri>
-            <name>markerblock/markers_alvar4</name>
+            <name>markers_alvar_20_25</name>
           </script>
         </material>
       </visual>
