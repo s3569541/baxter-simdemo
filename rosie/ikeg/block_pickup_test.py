@@ -360,9 +360,39 @@ def make_pose_stamped(pos,frame_id='base', orientation=Quaternion(x=0, y=1, z=0,
 ### Example proper
 ###
 
-print 'init gripper'
 mylimb = 'left'
 
+# Do we have Baxter or Rosie?
+from gazebo_msgs.srv import GetWorldProperties
+from gazebo_msgs.srv import GetModelState
+import rospy
+
+parent_model='mobility_base'
+parent_frame='head'
+
+try:
+    get_world_properties = rospy.ServiceProxy('/gazebo/get_world_properties', GetWorldProperties)
+    props = get_world_properties()
+    for name in props.model_names:
+      if name=='mobility_base' or name=='baxter':
+        parent_model=name+"::head"
+except rospy.ServiceException as e:
+    print e
+    sys.exit(1)
+
+model_coordinates = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+
+print 'get position of marker'
+coords = model_coordinates('marker1', parent_model)
+blockpose = coords.pose
+if coords.success:
+  print('block pose',blockpose,'relative to',parent_model)
+else:
+  print('could not get marker1 position wrt',parent_model)
+
+pos = blockpose.position
+
+print 'init gripper'
 success = False
 while not success:
   try:
@@ -379,32 +409,29 @@ gripper.set_holding_force(100)
 gripper.close()
 gripper.open()
 
-model_coordinates = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-coords = model_coordinates('marker1', 'baxter::base')
-blockpose = coords.pose
-if coords.success:
-  print('block pose',blockpose)
-else:
-  print('could not get marker1 position wrt base frame')
-pos = blockpose.position
-
-solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.19), frame_id='base'))
-solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.04), frame_id='base'))
+solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.20), frame_id='head'))
+solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.04), frame_id='head'))
 
 gripper.close()
 rospy.sleep(2.0)
 
-solve_move_trac(mylimb, make_pose_stamped(Point(x=0.5, y=0.0, z=0.0,), frame_id='base'))
+solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.20), frame_id='head'))
 
-model_coordinates = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-coords = model_coordinates('marker1', 'baxter::base')
+print 'get new position of marker'
+coords = model_coordinates('marker1', parent_model)
 if coords.success:
+  print('block pose',blockpose,'relative to',parent_model)
   pose = coords.pose
-  pos = pose.position
-  print('pos',pos)
-  # note: we expect the cube to be approx 5cm below the tool 0 position
-  if (abs(pos.x - 0.5) < 0.04 and abs(pos.y) < 0.04 and abs(pos.z + 0.05) < 0.04):
+  newpos = pose.position
+  # should be 15cm higher
+  # note: we would also expect the cube to be approx 5cm below the tool 0 position
+  if (abs(newpos.x - pos.x) < 0.04 and abs(newpos.y - pos.y) < 0.04 and abs((newpos.z - pos.z) - 0.14) < 0.04):
     print 'success'
     sys.exit(0)
+  else:
+    print 'failure, block is at',newpos,'vs originally at',pos
+else:
+  print('could not get marker1 position wrt',parent_model)
+
 print 'failure'
 sys.exit(1)
