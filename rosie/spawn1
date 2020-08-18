@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Gazebo / Baxter drivers do not respond well to malformed deletes ... ?
+# Appears to cause failure with error: "[FATAL] [1597221904.084218604]: The internal stop and start request lists are not empty at the beginning of the swithController() call. This should not happen."
+
+function delete_model() {
+  modelname=$1	 
+  echo "Checking if model $modelname needs to be deleted"
+  { ~/rosie/get_gazebo_models.py | egrep "'${modelname}'" ; } && echo Deleting $modelname && rosservice call /gazebo/delete_model $modelname
+}
+
+delete_model marker1
+
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.0 -z 0.8
