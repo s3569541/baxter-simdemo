@@ -69,40 +69,6 @@ redebug = rospy.Publisher('/red/debug', String, queue_size=1)
 #rs.enable()
 
 
-##################################
-# TRAC IK solver for Baxter
-##################################
-
-global mylimb
-mylimb = 'left'
-
-# ps: PoseStamped
-def trac_ik_solve(limb, ps):
-	print 'publish',ps
-        target_topic.publish(ps)
-        local_base_frame = limb+"_arm_mount"
-        ik_solver = IK(local_base_frame,
-                       limb+"_wrist",
-                       urdf_string=urdf_str)
-        seed_state = [0.0] * ik_solver.number_of_joints
-        # canonical pose in local_base_frame
-        #hdr = Header(stamp=rospy.Time.now(), frame_id=from_frame)
-        #ps = PoseStamped(
-        #        header=hdr,
-        #        pose=pose,
-        #        )
-        p = translate_frame(ps,local_base_frame)
-        #print 'translated frame',p
-        soln = ik_solver.get_ik(seed_state,
-                        p.pose.position.x,p.pose.position.y,p.pose.position.z,  # X, Y, Z
-                        p.pose.orientation.x, p.pose.orientation.y, p.pose.orientation.z, p.pose.orientation.w,  # QX, QY, QZ, QW
-                        0.01,0.01,0.01,
-                        0.1,0.1,0.1,
-
-        )
-        print 'trac soln',soln
-        return soln
-
 # translate PoseStamped arg:ps into Pose with respect to arg:frame
 def translate_frame(ps,frame):
     #print 'translate_frame',pose
@@ -118,7 +84,6 @@ def translate_frame(ps,frame):
 
 from gazebo_msgs.srv import GetModelState
 
-avgpos = None
 blockspos = [None,None,None,None,None,None]
 
 def gazebo_pos_marker(blocknr):
@@ -135,9 +100,6 @@ def gazebo_pos_marker(blocknr):
     blockpos = blockpose.position
     blockspos[blocknr] = blockpos
     return blockpos
-
-def gazebo_pos_marker1():
-    return gazebo_pos_marker(1)
 
 def gazebo_pos_markerblocks():
     gazebo_pos_marker(1)
@@ -166,8 +128,6 @@ def make_pose_stamped(pos,frame_id='base', orientation=Quaternion(x=0, y=1, z=0,
         pose=makepose(pos, orientation),
   )
 
-avgspos = [None,None,None,None,None,None,None]
-
 ## marker id -> frame id -> {avg(marker pose in base frame):, err: int(camera to block dist) -> int(distance)}
 avgmarkerpos = {}
 
@@ -195,7 +155,6 @@ def dist3d(pt1,pt2):
   return round(math.sqrt(square(pt1.x - pt2.x) + square(pt1.y - pt2.y) + square(pt1.z - pt2.z)))
 
 def marker_callback(data):
-  global avgpos
   global blockpos
   global avgmarkerpos
   if data.markers:
