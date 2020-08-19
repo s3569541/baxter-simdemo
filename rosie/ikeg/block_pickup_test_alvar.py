@@ -471,6 +471,8 @@ d = {}
 
 def getavgpos():
     global avgpos
+    global d5
+    global d
     print 'awaiting Alvar avg'
     rospy.sleep(3)
     if 5 in avgmarkerpos:
