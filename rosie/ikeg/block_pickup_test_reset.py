@@ -440,7 +440,7 @@ def make_pose_stamped(pos,frame_id='base', orientation=Quaternion(x=0, y=1, z=0,
 ###
 
 mylimb = 'left'
-solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.49, -0.0, 0.0, 0), frame_id='base'))
+solve_move_trac(mylimb, make_pose_stamped(Vectors.V4D(0.49, -0.0, 0.5, 0), frame_id='base'))
 
 #while True:
 #    rospy.sleep(1.0)
