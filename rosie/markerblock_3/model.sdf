@@ -2,6 +2,7 @@
 <sdf version="1.6">
   <model name="markerblock_3">
     <pose>0 0 0 0 0 0</pose>
+    <link name="mb4_box">
       <inertial>
         <mass>0.01</mass>
         <inertia> <!-- inertias are tricky to compute -->
@@ -14,7 +15,6 @@
           <izz>0.083</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
         </inertia>
       </inertial>
-    <link name="mb4_box">
       <pose>0 0 0 0 0 0</pose>
       <collision name="collision">
         <geometry>
