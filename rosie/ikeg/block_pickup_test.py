@@ -382,13 +382,15 @@ except rospy.ServiceException as e:
 
 model_coordinates = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
 
+block_objid = 'marker2'
+
 print 'get position of marker'
-coords = model_coordinates('marker1', parent_model)
+coords = model_coordinates(block_objid, parent_model)
 blockpose = coords.pose
 if coords.success:
   print('block pose',blockpose,'relative to',parent_model)
 else:
-  print('could not get marker1 position wrt',parent_model)
+  print('could not get ',block_objid,' position wrt',parent_model)
 
 pos = blockpose.position
 
@@ -418,7 +420,7 @@ rospy.sleep(2.0)
 solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.20), frame_id='head'))
 
 print 'get new position of marker'
-coords = model_coordinates('marker1', parent_model)
+coords = model_coordinates(block_objid, parent_model)
 if coords.success:
   print('block pose',blockpose,'relative to',parent_model)
   pose = coords.pose
@@ -431,7 +433,7 @@ if coords.success:
   else:
     print 'failure, block is at',newpos,'vs originally at',pos
 else:
-  print('could not get marker1 position wrt',parent_model)
+  print('could not get ',block_objid,' position wrt',parent_model)
 
 print 'failure'
 sys.exit(1)
