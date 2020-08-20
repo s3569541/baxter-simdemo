@@ -383,22 +383,30 @@ def round(v):
 ### TODO: collapse into Object
 ###
 
-## marker id -> frame id -> {avg(marker pose in base frame):, err: int(camera to block dist) -> int(distance)}
+## marker id -> frame id -> {avg(marker pose in head frame):, err: int(camera to block dist) -> int(distance), avgyaw: }
 avgmarkerpos = {}
 
 def marker_callback(data):
   global avgmarkerpos
   if data.markers:
       for marker in data.markers:
+          # assumption: frame == 'head_camera' | 'left_hand_camera' | 'right_hand_camera'
           frame = marker.header.frame_id
+          # assumption based on VXLab block scheme
           blocknr = int(marker.id / 10) + 1
+          # ignore head_camera for "small" blocks that are grab-able
           if frame != 'head_camera' and blocknr == 1:
               print 'marker',marker.id,'blocknr',blocknr,'frame',frame
+              # define a "de facto" identical pose to the target block's in the "head" frame
+              # assumption: head XY plane is parallel to table
               pose = translate_frame(make_pose_stamped(marker.pose.pose.position,frame), 'head')
               pos = pose.pose.position
+              # assumption: we are seeing the top face of the block; only the yaw is important
+              (roll,pitch,yaw) = euler_from_quaternion(pose.pose.orientation)
               framedict=init_key(avgmarkerpos,marker.id,{})
               d=init_key(framedict,frame,{})
               avgpos = init_key(d,'avg',pos)
+              avgyaw = init_key(d,'avg_yaw',yaw)
               err=init_key(d,'err',{})
               d['avg'] = Point(x = pairavg(avgpos.x, pos.x), y = pairavg(avgpos.y, pos.y), z = pairavg(avgpos.z, pos.z))
               avgpos = d['avg']
@@ -483,8 +491,9 @@ def getavgpos():
         d = d5['left_hand_camera']
     if 'avg' in d:
         avgpos = d['avg']
+        avgyaw = d['avg']
     print 'true pos',pos
-    print 'alvar avg pos',avgpos
+    print 'alvar avg pos',avgpos,'yaw',avgyaw
 
 while avgpos == None:
     getavgpos()
