@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#source ~/rosie/rosenv.common.bash
+#source /opt/ros/melodic/setup.bash
+
+ready=0
+set -xv
+while [ "$ready" -eq "0" ];
+do
+	echo 'Awaiting ROS master'
+	rostopic pub /test_status std_msgs/String 'Test service started' -1 && ready=1
+	sleep 1
+done
+
+cd ~/rosie/ikeg
+
+./block_pickup_test_reset.py
+~/rosie/spawn1
+./pickup_test_alvar_yaw.py

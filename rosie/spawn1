@@ -10,5 +10,8 @@ function delete_model() {
 }
 
 delete_model marker1
+delete_model marker2
+delete_model marker3
 
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.0 -z 0.8
+#rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.0 -z 0.8
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.03 -z 0.8 -Y 0.7 -P -0.0 -R -0.0
