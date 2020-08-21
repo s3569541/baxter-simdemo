@@ -33,7 +33,8 @@ function cleanup()
 }
 trap cleanup EXIT SIGINT SIGTERM
 
-#export LIBGL_ALWAYS_INDIRECT=0
+#export LIBGL_ALWAYS_INDIRECT=1
+#export LIBGL_ALWAYS_SOFTWARE=1
 export QT_X11_NO_MITSHM=1
 
 case $BAXTER_ONLY in
@@ -61,17 +62,21 @@ rostopic pub /rosie/sim/events std_msgs/String 'Arms pre-tucked' -1
 sleep 3
 echo "Unpausing..."
 rosservice call gazebo/unpause_physics
+echo "Unpaused"
 
 sleep 1
+
+~/rosie/await_simulator_is_loaded.py || cleanup
+rostopic pub /rosie/sim/events std_msgs/String 'Sim started' -1
+
+echo "Untucking arms..."
+~/rosie/untuck || exit 1
+echo "Arms untucked"
+
 echo "Spawning objects..."
 ~/rosie/spawn
 rostopic pub /rosie/sim/events std_msgs/String 'Objects spawned' -1
-
-~/rosie/await_simulator_is_loaded.py || cleanup
-
-rostopic pub /rosie/sim/events std_msgs/String 'Sim started' -1
-
-~/rosie/untuck || exit 1
+echo "Objects spawned"
 
 # center head
 ~/rosie/headcentre &
