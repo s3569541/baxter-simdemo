@@ -6,7 +6,6 @@
 #
 ########################################################################
 
-#FROM osrf/ros:melodic-desktop-full
 FROM ros:melodic-ros-core
 MAINTAINER Ian Peake ian.peake@rmit.edu.au
 
@@ -207,5 +206,23 @@ WORKDIR /root/rosie
 #   https://github.com/ros-drivers/four_wheel_steering_msgs
 
 #CMD ["/root/rosie/simstart"]
+
+# For openGL
+COPY NVIDIA-Linux-x86_64-450.57.run /root/NVIDIA-Linux-x86_64-450.57.run
+#ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/rosie
+RUN apt update && apt install kmod
+RUN bash -c 'echo $PATH ; /root/NVIDIA-Linux-x86_64-450.57.run -a -N --ui=none --no-kernel-module'
+
+WORKDIR /root/ws_baxter/src
+RUN git clone https://github.com/ros-planning/moveit_robots.git
+RUN catkin build --jobs 16 --limit-status-rate 0.001 --no-notify
+RUN apt -y install ros-melodic-moveit-simple-controller-manager ros-melodic-moveit-planners ros-melodic-moveit-visual-tools ros-melodic-moveit-ros-visualization ros-melodic-moveit-commander
+
+# Change to virtual joint?
+# https://github.com/ros-industrial/universal_robot/pull/284#issuecomment-613850762
+
+RUN apt update && apt -y dist-upgrade
+
+WORKDIR /root/rosie
 ENTRYPOINT ["/root/rosie/rosie-sim-guest-runner"]
 #CMD [""]
