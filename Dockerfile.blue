@@ -205,7 +205,9 @@ WORKDIR /root/rosie
 # NVidia Driver - To Enable X output over Hardare OpenGL
 ########################################################
 
-COPY NVIDIA-Linux-x86_64-450.57.run /root/NVIDIA-Linux-x86_64-450.57.run
+WORKDIR /root
+RUN wget http://us.download.nvidia.com/XFree86/Linux-x86_64/450.57/NVIDIA-Linux-x86_64-450.57.run
+#COPY NVIDIA-Linux-x86_64-450.57.run /root/NVIDIA-Linux-x86_64-450.57.run
 #ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/rosie
 RUN apt update && apt install kmod
 RUN bash -c 'echo $PATH ; /root/NVIDIA-Linux-x86_64-450.57.run -a -N --ui=none --no-kernel-module'
