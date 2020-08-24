@@ -19,7 +19,8 @@ set -xv
 rm -f tests.out
 touch tests.out
 
-for test in $TESTS
+# startup is required for the other tests
+for test in "startup ${TESTS}"
 do
   echo running $test | tee tests.out
   date | tee ${test}.out
