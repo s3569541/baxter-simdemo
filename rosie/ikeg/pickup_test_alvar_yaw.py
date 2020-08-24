@@ -368,11 +368,11 @@ def make_pose_stamped_yaw(pos, frame_id='base', yaw=0):
 ### Library
 ###
 
-# ensure that dict contains key by priming with val if necessary
-# return dict[key]
-def init_key(dict,key,val):
+# Ensure that dict contains an entry for key, using dict[key]=default
+# Return the value of dict[key]
+def init_key(dict,key,default):
   if not (key in dict):
-    dict[key]=val
+    dict[key]=default
   return dict[key]
 
 def square(v1):
@@ -423,6 +423,7 @@ def process_alvar(data, markerdata):
               d=init_key(framedict,frame,{})
               avgpos = init_key(d,'avg',pos)
               avgyaw = init_key(d,'avgyaw',yaw)
+              avgyaw = init_key(d,'frame','head')
               err=init_key(d,'err',{})
               d['avg'] = Point(x = pairavg(avgpos.x, pos.x), y = pairavg(avgpos.y, pos.y), z = pairavg(avgpos.z, pos.z))
               d['avgyaw'] = pairavg(avgyaw, yaw)
@@ -450,7 +451,6 @@ rospy.Subscriber('/ar_pose_marker', AlvarMarkers, marker_callback, queue_size=1)
 ### Example proper
 ###
 
-mylimb = 'left'
 
 # Do we have Baxter or Rosie?
 from gazebo_msgs.srv import GetWorldProperties
@@ -471,6 +471,10 @@ except rospy.ServiceException as e:
 
 model_coordinates = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
 
+##
+## This data is only available from simulation
+##
+
 print 'get position of marker wrt ',parent_model
 coords = model_coordinates(target_object, parent_model)
 blockpose = coords.pose
@@ -488,10 +492,14 @@ tquat = (tori.x,tori.y,tori.z,tori.w)
 (trueroll,truepitch,trueyaw) = tf.transformations.euler_from_quaternion(tquat)
 print 'true RPW',trueroll,truepitch,trueyaw
 
+global mylimb
+mylimb = 'left'
+
 global gripper
 
 def init_gripper():
     global gripper
+    global mylimb
     print 'init gripper'
     success = False
     while not success:
@@ -584,9 +592,10 @@ print 'get new position of marker'
 
 coords = model_coordinates(target_object, parent_model)
 if coords.success:
-  print('block pose',blockpose,'relative to',parent_model)
+  print('block original position',truepos,'relative to',parent_model)
   pose = coords.pose
   newpos = pose.position
+  print('block current position',newpos)
   # should be 15cm higher
   # note: more properly we would expect the cube to be approx 5cm below the 'frame' (camera) position
   if (abs(newpos.x - truepos.x) < 0.04 and abs(newpos.y - truepos.y) < 0.04 and abs((newpos.z - truepos.z) - 0.14) < 0.04):
