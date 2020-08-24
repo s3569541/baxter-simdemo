@@ -35,6 +35,7 @@ services:
         - type: bind
           source: /dev/dri
           target: /dev/dri
+        privileged: true
         environment:
           #DISPLAY: "novnc:0"
           - DISPLAY=${XDISPLAY}
@@ -61,9 +62,11 @@ services:
         - type: bind
           source: /dev/dri
           target: /dev/dri
+        privileged: true
         environment:
           #DISPLAY: "novnc:0"
           - DISPLAY=${XDISPLAY}
+          - BAXTER_ONLY=${BAXTER_ONLY}
         entrypoint: ["/root/rosie/rosie-main-guest-runner"]
     vxlab-rosie-nav:
         container_name: vxlab-rosie-nav
