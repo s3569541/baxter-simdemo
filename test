@@ -6,8 +6,14 @@ git pull
 # In case docker-compose does not kill all containers...
 # docker rm -f gazebo vxlab-rosie-nav novnc display2 alvar-head alvar-right
 
-export SIMTESTS=${1:-"startup pickup navigation"}
-echo SIMTESTS: $SIMTESTS
+echo args $#
+echo arg1 $1
+
+case "$#" in
+	1)
+		export SIMTESTS=${1}
+	;;
+esac
 
 docker-compose down --remove-orphans && docker-compose -f docker-compose.test.yml build && docker-compose -f docker-compose.yml up --force-recreate -d && \
   echo running tests && \
