@@ -469,12 +469,11 @@ except rospy.ServiceException as e:
     print e
     sys.exit(1)
 
-model_coordinates = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-
 ##
 ## This data is only available from simulation
 ##
 
+model_coordinates = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
 print 'get position of marker wrt ',parent_model
 coords = model_coordinates(target_object, parent_model)
 blockpose = coords.pose
