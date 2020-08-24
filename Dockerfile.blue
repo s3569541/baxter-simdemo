@@ -206,10 +206,11 @@ WORKDIR /root/rosie
 ########################################################
 
 WORKDIR /root
+RUN apt update && apt install kmod
 RUN wget http://us.download.nvidia.com/XFree86/Linux-x86_64/450.57/NVIDIA-Linux-x86_64-450.57.run
+RUN chmod +x NVIDIA-Linux-x86_64-450.57.run
 #COPY NVIDIA-Linux-x86_64-450.57.run /root/NVIDIA-Linux-x86_64-450.57.run
 #ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/rosie
-RUN apt update && apt install kmod
 RUN bash -c 'echo $PATH ; /root/NVIDIA-Linux-x86_64-450.57.run -a -N --ui=none --no-kernel-module'
 
 ########################################################
