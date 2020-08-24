@@ -27,11 +27,9 @@ RUN apt-get update && apt -y dist-upgrade
 
 ENV TERM xterm
 
-################
-#
+########################################################
 # Baxter
-#
-################
+########################################################
 
 # Setup catkin workspace
 ENV CATKIN_WS=/root/ws_baxter
@@ -89,11 +87,9 @@ RUN catkin config --extend /opt/ros/${ROS_DISTRO} --cmake-args -DCMAKE_BUILD_TYP
 
 #RUN apt-get update && apt -y install ros-melodic-catkin
 
-################
-#
+########################################################
 # Dataspeed mobility base
-#
-################
+########################################################
 
 ENV MB_WS /root/mb_ws/
 WORKDIR $MB_WS/
@@ -156,11 +152,9 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
   telnet lsof psmisc
 
-################
-#
+########################################################
 # MIR100
-#
-################
+########################################################
 
 # Create ROS workspace
 WORKDIR /root/mir_ws/src
@@ -207,11 +201,18 @@ WORKDIR /root/rosie
 
 #CMD ["/root/rosie/simstart"]
 
-# For openGL
+########################################################
+# NVidia Driver - To Enable X output over Hardare OpenGL
+########################################################
+
 COPY NVIDIA-Linux-x86_64-450.57.run /root/NVIDIA-Linux-x86_64-450.57.run
 #ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/rosie
 RUN apt update && apt install kmod
 RUN bash -c 'echo $PATH ; /root/NVIDIA-Linux-x86_64-450.57.run -a -N --ui=none --no-kernel-module'
+
+########################################################
+# Baxter - MoveIt
+########################################################
 
 WORKDIR /root/ws_baxter/src
 RUN git clone https://github.com/ros-planning/moveit_robots.git
