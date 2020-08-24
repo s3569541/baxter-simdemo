@@ -1,4 +1,4 @@
-[ -f /root/navigation_ws/devel/setup.bash ] || { echo 'trying to build navigation_ws' ; source /opt/ros/melodic/setup.bash ; cd /root/navigation_ws ; ./setup ; }
+{ rospack list | grep mobility_base_2dnav ; } || { echo 'trying to build navigation_ws' ; source /opt/ros/melodic/setup.bash ; cd /root/navigation_ws ; rm -rf build devel ; ./setup ; }
 
 # Depends on setup (above)
 # TODO: is this redundant?
