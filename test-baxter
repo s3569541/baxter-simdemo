@@ -6,7 +6,7 @@ git pull
 # In case docker-compose does not kill all containers...
 # docker rm -f gazebo vxlab-rosie-nav novnc display2 alvar-head alvar-right
 
-export SIMTESTS=${1:-"startup pickup navigation"}
+export SIMTESTS=${1:-"startup navigation vision_pickup_random vision_pickup pickup"}
 export BAXTER_ONLY=true
 
 echo SIMTESTS: $SIMTESTS
