@@ -2,3 +2,4 @@ Last Config Dir: /root/.rviz
 Last Image Dir: ""
 Recent Configs:
   - /root/.rviz/default.rviz
+  - /root/ws_baxter/src/moveit_robots/baxter/baxter_moveit_config/launch/moveit.rviz
