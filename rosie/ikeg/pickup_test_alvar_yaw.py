@@ -423,7 +423,7 @@ def process_alvar(data, markerdata):
               d=init_key(framedict,frame,{})
               avgpos = init_key(d,'avg',pos)
               avgyaw = init_key(d,'avgyaw',yaw)
-              avgyaw = init_key(d,'frame','head')
+              frame = init_key(d,'frame','head')
               err=init_key(d,'err',{})
               d['avg'] = Point(x = pairavg(avgpos.x, pos.x), y = pairavg(avgpos.y, pos.y), z = pairavg(avgpos.z, pos.z))
               d['avgyaw'] = pairavg(avgyaw, yaw)
