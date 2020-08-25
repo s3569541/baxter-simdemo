@@ -1,3 +1,5 @@
 #!/bin/bash
 
+[ "$BAXTER_ONLY" = "true" ] && { echo "BAXTER_ONLY = true, failed precondition" ; exit 1 ; }
+
 ~/rosie/navgoal/move_to_door.py
