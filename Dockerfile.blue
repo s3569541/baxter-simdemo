@@ -179,10 +179,13 @@ RUN /bin/bash -c "source /root/mb_ws/devel/setup.bash && \
 RUN apt update && apt install -y \
     ros-melodic-ar-track-alvar ros-melodic-trac-ik
 
-RUN apt update && apt install -y \
-    ros-melodic-blender-gazebo
+#RUN apt update && apt install -y \
+#    ros-melodic-blender-gazebo
 
+###################################################
 ## dynamic joint attacher
+###################################################
+
 #RUN mkdir -p /root/gazebo_link_attacher_ws/src
 #WORKDIR /root/gazebo_link_attacher_ws/src
 ##RUN source melodic/setup.bash && catkin_init_workspace
@@ -202,11 +205,12 @@ WORKDIR /root/rosie
 #CMD ["/root/rosie/simstart"]
 
 ########################################################
-# NVidia Driver - To Enable X output over Hardare OpenGL
+# NVidia Driver - To Enable X output over Hardware-accelerated OpenGL
 ########################################################
 
 WORKDIR /root
 RUN apt update && apt install kmod
+# Use the NVidia driver that corresponds to the version on your host
 RUN wget http://us.download.nvidia.com/XFree86/Linux-x86_64/450.57/NVIDIA-Linux-x86_64-450.57.run
 RUN chmod +x NVIDIA-Linux-x86_64-450.57.run
 #COPY NVIDIA-Linux-x86_64-450.57.run /root/NVIDIA-Linux-x86_64-450.57.run
