@@ -52,7 +52,10 @@ from std_msgs.msg import Header
 ### Needed?
 #mutex = threading.Lock()
 
-locallib.init()
+def this_marker(marker):
+  return frame != 'head_camera' and block_nr(marker) == 1
+
+locallib.init(nodename='pickup_alvar_demo',target_marker_fn=this_marker)
 
 #global tf_buffer
 #tf_buffer = locallib.tf_buffer

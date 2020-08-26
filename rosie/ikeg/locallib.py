@@ -389,12 +389,12 @@ def round(v):
 ### TODO: collapse into Object
 ###
 
-global target_cube
-target_cube = 1
-global target_object
-target_object = 'marker'+str(target_cube)
-global target_marker_id
-target_marker_id = 5
+#global target_cube
+#target_cube = 1
+#global target_object
+#target_object = 'marker'+str(target_cube)
+#global target_marker_id
+#target_marker_id = 5
 
 ## marker id -> frame id -> {avg(marker pose in base frame):, err: int(camera to block dist) -> int(distance)}
 avgmarkerpos = {}
@@ -409,16 +409,25 @@ avgmarkerpos = {}
 #  z: 0.342937175775
 #  w: 0.939358336986, 'relative to', 'baxter::head')
 
+def any_marker(marker):
+  return True
+
+global target_marker_fn
+target_marker_fn = any_marker
+
+def block_nr(marker):
+    return int(marker.id / 10) + 1
 
 def process_alvar(data, markerdata):
+  global target_marker_fn
   if data.markers:
       for marker in data.markers:
           frame = marker.header.frame_id
-          blocknr = int(marker.id / 10) + 1
-          # process only "small" grab-able blocks
-          if frame != 'head_camera' and blocknr != 5:
-              if blocknr == target_cube:
-                print 'marker',marker.id,'blocknr',blocknr,'frame',frame
+          #blocknr = int(marker.id / 10) + 1
+          blocknr = block_nr(marker)
+          if target_marker_fn(marker): #frame != 'head_camera' and blocknr != 5:
+              #if blocknr == target_cube:
+              print 'alvar marker:',marker.id,'blocknr',blocknr,'frame',frame
                 #print '- pose',marker
               pose = translate_frame(make_pose_stamped(marker.pose.pose.position,ori=marker.pose.pose.orientation,frame_id=frame), 'head')
               pos = pose.pose.position
@@ -429,15 +438,16 @@ def process_alvar(data, markerdata):
               framedict=init_key(avgmarkerpos,marker.id,{})
               d=init_key(framedict,frame,{})
               avgpos = init_key(d,'avg',pos)
-              avgyaw = init_key(d,'avgyaw',yaw)
+              avgrpy = init_key(d,'avg_rpy',(roll,pitch,yaw))
               frame = init_key(d,'frame','head')
               err=init_key(d,'err',{})
               avgpos = Point(x = pairavg(avgpos.x, pos.x), y = pairavg(avgpos.y, pos.y), z = pairavg(avgpos.z, pos.z))
+              avgrpy = (pairavg(avgrpy[0], roll), pairavg(avgrpy[1], pitch), pairavg(avgrpy[2], yaw))
               d['avg'] = avgpos
-              d['avgyaw'] = pairavg(avgyaw, yaw)
+              d['avg_rpy'] = avgrpy
               avgpos = d['avg']
-              avgyaw = d['avgyaw']
-              print '-','marker','avgpos',avgpos.x,avgpos.y,avgpos.z,'quat',quat,'yaw',yaw,'avgyaw',avgyaw
+              avgyaw = d['avg_rpy']
+              print '-','marker','avgpos',avgpos.x,avgpos.y,avgpos.z,'avg_rpy',avgrpy
               #print '- pose,orientation,rpy','(',pos.x,pos.y,pos.z,')','(',ori.x,ori.y,ori.z,ori.w,')','(',roll,pitch,yaw,')'
               #print '- true pose,orientation,rpy','(',truepos.x,truepos.y,pos.z,')','(',tori.x,tori.y,tori.z,tori.w,')','(',trueroll,truepitch,trueyaw,')'
               #print '- avgyaw', avgyaw, 'trueyaw', trueyaw
@@ -482,19 +492,21 @@ def getavgpos(target_marker_id):
     rospy.sleep(3)
     if target_marker_id in avgmarkerpos:
         d5 = avgmarkerpos[target_marker_id]
+    if 'head_camera' in d5:
+        d = d5['head_camera']
     if 'right_hand_camera' in d5:
         d = d5['right_hand_camera']
     if 'left_hand_camera' in d5:
         d = d5['left_hand_camera']
     if 'avg' in d:
         avgpos = d['avg']
-        avgyaw = d['avgyaw']
+        avgyaw = d['avg_rpy'][2]
     print '- alvar','avg pos',avgpos,'avg yaw',avgyaw
     return (avgpos,avgyaw)
 
-def init():
+def init(nodename='vxlab_ik_alvar_demo', target_marker_fn=any_marker):
     print 'init node...'
-    rospy.init_node("vxlab_ik_alvar_demo", anonymous=True)
+    rospy.init_node(nodename, anonymous=True)
     print 'init node done'
 
     print 'init TF'
