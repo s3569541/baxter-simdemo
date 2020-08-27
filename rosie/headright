@@ -1,0 +1,1 @@
+rostopic pub /robot/head/command_head_pan baxter_core_msgs/HeadPanCommand '{ target: -1.0, speed_ratio: 0.1 }'

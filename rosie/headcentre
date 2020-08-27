@@ -1,1 +1,9 @@
-rostopic pub -1 /robot/head/command_head_pan baxter_core_msgs/HeadPanCommand '{ target: 0.0, speed_ratio: 0.1 }'
+#!/bin/bash
+
+counter=0
+until [ "$counter" -gt 2 ]
+do
+  echo $counter
+  rostopic pub -1 /robot/head/command_head_pan baxter_core_msgs/HeadPanCommand '{ target: 0.0, speed_ratio: 0.1 }'
+  ((counter++))
+done
