@@ -469,6 +469,7 @@ def process_alvar(data, markerdata):
               avgrpy = (pairavg(avgrpy[0], roll), pairavg(avgrpy[1], pitch), pairavg(avgrpy[2], yaw))
               d['avg'] = avgpos
               d['avg_rpy'] = avgrpy
+              d['last_seen'] = rospy.get_time()
               avgpos = d['avg']
               avgyaw = d['avg_rpy']
               print '-','marker','avgpos',avgpos.x,avgpos.y,avgpos.z,'avg_rpy',avgrpy
