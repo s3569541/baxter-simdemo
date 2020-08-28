@@ -11,3 +11,10 @@ s = 0.04
 m = 0.01
 
 print (2*m*s*s) / 12
+
+# side 50cm
+s = 0.50
+# mass 1Kg
+m = 1.0
+
+print (2*m*s*s) / 12
