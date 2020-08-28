@@ -64,11 +64,6 @@ echo "Unpausing..."
 rosservice call gazebo/unpause_physics
 echo "Unpaused"
 
-sleep 1
-
-~/rosie/await_simulator_is_loaded.py || cleanup
-rostopic pub /rosie/sim/events std_msgs/String 'Sim started' -1
-
 echo "Untucking arms..."
 ~/rosie/untuck || exit 1
 echo "Arms untucked"
@@ -80,6 +75,11 @@ echo "Objects spawned"
 
 # center head
 ~/rosie/headcentre &
+
+# TO DO: make headcentre synchronous / reliable
+sleep 5
+~/rosie/await_simulator_is_loaded.py || cleanup
+rostopic pub /rosie/sim/events std_msgs/String 'Sim started' -1
 
 #date > packages.log
 #./aptlist >> packages.log
