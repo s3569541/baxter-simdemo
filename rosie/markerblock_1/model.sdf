@@ -9,12 +9,12 @@
           <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
           <!-- for a cube: ixx,iyy,izz = 0.083 * mass * (2*side*side) -->
           <!-- 2.66666666667e-06 for a cube of mass 0.01, side 0.04 -->
-          <ixx>0.00000266</ixx>       
+          <ixx>0.00000266</ixx>
           <ixy>0.0</ixy>        
           <ixz>0.0</ixz>       
-          <iyy>0.00000266</iyy>    
+          <iyy>0.00000266</iyy>
           <iyz>0.0</iyz>     
-          <izz>0.00000266</izz>  
+          <izz>0.00000266</izz>
         </inertia>
       </inertial>
       <pose>0 0 0 0 0 0</pose>
