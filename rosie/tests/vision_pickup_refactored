@@ -15,11 +15,11 @@ done
 cd ~/rosie/ikeg
 
 ~/rosie/spawn
-~/rosie/delete_model 1
+delete_model marker1
 ./block_pickup_test_reset.py
-~/rosie/spawn_random.py 1
-./pickup_test_alvar_yaw.py
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.03 -z 0.8 -Y 0.7 -P -0.0 -R -0.0
+./pickup_alvar_demo.py
 result=$?
 
-~/rosie/delete_model 1
+delete_model marker1
 exit $result

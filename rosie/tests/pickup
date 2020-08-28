@@ -14,8 +14,17 @@ done
 
 cd ~/rosie/ikeg
 
+# Pick up using ground truth position provided by Gazebo (only available during simulation)
+
+~/rosie/spawn
+delete_model marker1
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.03 -z 0.8 -Y 0.0 -P -0.0 -R -0.0
 ./block_pickup_test_reset.py
-~/rosie/spawn1
+
 ./block_pickup_test.py
+result=$?
+
+delete_model marker1
+exit $result
 
 # check: the markerblock should be roughly at the same position as the gripper after pickup
