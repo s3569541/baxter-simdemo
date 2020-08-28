@@ -9,6 +9,8 @@ function delete_model() {
   { ~/rosie/get_gazebo_models.py | egrep "'${modelname}'" ; } && echo Deleting $modelname && rosservice call /gazebo/delete_model $modelname
 }
 
+echo Deleting models
+
 #delete_model marker5
 delete_model marker4
 delete_model marker3
@@ -16,14 +18,14 @@ delete_model marker2
 delete_model marker1
 delete_model table1
 
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markertable/model.sdf -model table1 -x 1.2 -y 0.0 -z 0.0
+echo Spawning models
 
-# large block
+# table
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markertable/model.sdf -model table1 -x 1.2 -y 0.0 -z 0.0
+# large navigation beacon
 rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4/model.sdf -model marker4 -x 1.5 -y -0.0 -z 0.9
 
-# small blocks
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.0 -z 0.8
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_2/model.sdf -model marker2 -x 0.5 -y -0.1 -z 0.8
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_3/model.sdf -model marker3 -x 0.5 -y 0.1 -z 0.8
-
-###rosrun gazebo_ros spawn_model -sdf -file ~/rosie/cafe_table/model.sdf -model cafe_table1 -x 2.5 -y -0.5 -z 0.0
+# small blocks ("targets")
+#rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.0 -z 0.8
+#rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_2/model.sdf -model marker2 -x 0.5 -y -0.1 -z 0.8
+#rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_3/model.sdf -model marker3 -x 0.5 -y 0.1 -z 0.8
