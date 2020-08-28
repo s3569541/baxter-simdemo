@@ -123,34 +123,29 @@ rospy.sleep(1)
 print 'gripper open'
 
 global avgpos
-global avgyaw
-global last_seen 
 avgpos = None
+global avgyaw
 avgyaw = None
+global last_seen 
 last_seen = None
-
-#def getavgpos():
-#    global avgpos
-#    global avgyaw
-#    print 'awaiting marker update'
-#    rospy.sleep(2)
-#    result = locallib.getavgpos(target_marker_id)
-#    if result != None:
-#        (avgpos,avgyaw) = locallib.getavgpos(target_marker_id)
-#        print 'marker update:',(avgpos,avgyaw)
+global marker
+marker = None
+global pos_in_frame
+pos_in_frame = None
 
 def getavgpos(left_only=False):
     global avgpos
     global avgyaw
     global last_seen
+    global pos_in_frame
     avgmarkerpos = locallib.avgmarkerpos
     d0 = {}
     d = {}
     print 'awaiting Alvar avg'
-    rospy.sleep(3)
+    rospy.sleep(1)
     if target_marker_id in avgmarkerpos:
         d0 = avgmarkerpos[target_marker_id]
-    if 'right_hand_camera' and not left_only in d0:
+    if 'right_hand_camera' in d0 and not left_only:
         d = d0['right_hand_camera']
     if 'left_hand_camera' in d0:
         d = d0['left_hand_camera']
@@ -158,14 +153,13 @@ def getavgpos(left_only=False):
         avgpos = d['avg']
         avgyaw = d['avg_rpy'][2]
         last_seen = d['last_seen']
-    print '- alvar','avg pos',avgpos,'avg yaw',avgyaw,'last sighting',rospy.get_time() - last_seen,'s ago'
-
-def getavgpos_any():
-    getavgpos(left_only=False)
-
-def getavgpos_left():
-    getavgpos(left_only=True)
-
+        marker = d['marker']
+        pos_in_frame = marker.pose.pose.position
+        frame = d['frame']
+        print '- getavgpos','avg pos',avgpos,'avg yaw',avgyaw,'last sighting',rospy.get_time() - last_seen,'s ago'
+        print '- marker wrt ',frame,':',pos_in_frame.x,pos_in_frame.y,pos_in_frame.z
+        return True
+    return False
 
 # FIXME: back off and try from more positions
 # FIXME: point right camera at best guess position
@@ -175,24 +169,17 @@ otherpose = locallib.get_frame(otherlimb+'_gripper','base')
 print 'camera on',otherlimb,'...'
 locallib.solve_move_trac(otherlimb, locallib.make_pose_stamped_rpy(otherpose.transform.translation, frame_id='base', r=3.3, p=0.0))
 
-#print '******* move to basic sighting pos ********'
-#print 'look for cube from pos1'
-#locallib.solve_move_trac(mylimb, locallib.make_pose_stamped(Point(x=0.49, y=-0.02, z=0.0), frame_id='base'))
-#getavgpos_any()
-#print 'look for cube from pos2'
-#locallib.solve_move_trac(mylimb, locallib.make_pose_stamped(Point(x=0.49, y= 0.02, z=0.0), frame_id='base'))
-#getavgpos_any()
-#last_seen_sighting = last_seen
-#print "Last seen:", last_seen - last_seen_sighting, "since last sighting", "seen?", last_seen > last_seen_sighting
-#last_seen_sighting = last_seen
-
 grab = False
 stage = 0
+
+def implies(p,q):
+    return not(p) or q
 
 while not grab:
     print 'stage',stage
     if stage == 0:
         # No sighting available
+        print '******* move to fallback sighting pos ********'
         locallib.solve_move_trac(mylimb, locallib.make_pose_stamped(Point(x=0.49, y=-0.02, z=0.2), frame_id='base'))
         last_seen = 0
         last_seen_sighting = 0
@@ -208,16 +195,23 @@ while not grab:
         locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x, y=avgpos.y, z=avgpos.z+0.05), frame_id='head', yaw=avgyaw))
         grab = True
     # update vision QOS info
-    getavgpos_left()
-    vision_valid = last_seen > last_seen_sighting
-    print "Last seen:", last_seen - last_seen_sighting, "since last sighting"
-    print "Vision valid?", vision_valid
+    # PASSING: getavgpos(left_only=(stage>=1))
+    getavgpos(left_only=(stage>=2))
+    # for stage 3, pre: gripper centred on the marker
+    centred = pos_in_frame and abs(pos_in_frame.x)<0.05 and abs(pos_in_frame.y)<0.05
+    fresh = last_seen > last_seen_sighting
+    vision_valid = fresh and implies(stage == 2, centred)
     last_seen_sighting = last_seen
     # if still have vision, proceed, otherwise back up
     if vision_valid:
         stage = stage + 1
     else:
-        stage = 1
+        stage = stage - 1
+        if (stage == 2) and not centred:
+            print 'not centred:',pos_in_frame
+        if not fresh:
+            print 'not fresh'
+        print '-> stage',stage
 
 ###
 ### Close grippers

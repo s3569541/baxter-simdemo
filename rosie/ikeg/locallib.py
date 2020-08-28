@@ -470,6 +470,7 @@ def process_alvar(data, markerdata):
               d['avg'] = avgpos
               d['avg_rpy'] = avgrpy
               d['last_seen'] = rospy.get_time()
+              d['marker'] = marker
               avgpos = d['avg']
               avgyaw = d['avg_rpy']
               print '-','marker','avgpos',avgpos.x,avgpos.y,avgpos.z,'avg_rpy',avgrpy
