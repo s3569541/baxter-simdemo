@@ -14,17 +14,33 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 source ~/rosie/rosenv.gazebo.bash
-set -xv
 
-rm -f tests.out
-touch tests.out
+DATE=`date '+%Y%m%d%H%M%S'`
+REPORT_DIR=~/rosie/tests/test_results
+mkdir -p $REPORT_DIR
+OUT=$REPORT_DIR/results.${DATE}.out
+#OUTDIR=$REPORT_DIR/output.${DATE}
+OUTDIR=$REPORT_DIR
+mkdir -p $OUTDIR
 
-# startup is required for the other tests
-for test in "startup ${TESTS}"
+#TESTS="startup ${TESTS}"
+
+echo TESTS: ${TESTS} | tee -a $OUT
+echo BAXTER_ONLY: ${BAXTER_ONLY} | tee -a $OUT
+echo OUTDIR: ${OUTDIR} | tee -a $OUT
+
+for test in ${TESTS}
 do
-  echo running $test | tee tests.out
-  date | tee ${test}.out
-  $SCRIPTDIR/tests/$test > ${test}.out 2>&1
-  let "result = 1 - $?"
-  echo "$test $result" |& tee tests.out
+  $SCRIPTDIR/tests/$test > ${OUTDIR}/${test}.out 2>&1
+  case $? in
+    1) result=FAIL
+    ;;
+    0) result=PASS
+    ;;
+    *) result=UNKN
+    ;;
+  esac
+  echo "***********************************"
+  echo "**** $result: $test ****" |& tee -a $OUT
+  echo "***********************************"
 done
