@@ -31,16 +31,20 @@ echo OUTDIR: ${OUTDIR} | tee -a $OUT
 
 for test in ${TESTS}
 do
+  STARTTIME=$(date +%s)
   $SCRIPTDIR/tests/$test > ${OUTDIR}/${test}.out 2>&1
+  ENDTIME=$(date +%s)
+  ELAPSEDTIME=$(($ENDTIME - $STARTTIME))
+  banner="    "
   case $? in
     1) result=FAIL
+       banner="****"
     ;;
     0) result=PASS
     ;;
     *) result=UNKN
+       banner="****"
     ;;
   esac
-  echo "***********************************"
-  echo "**** $result: $test ****" |& tee -a $OUT
-  echo "***********************************"
+  echo "$banner $result: $test: ${ELAPSEDTIME} sec" |& tee -a $OUT
 done
