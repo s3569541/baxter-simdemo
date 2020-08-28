@@ -83,13 +83,25 @@ def translate_pose_in_own_frame(ps,localname,dx,dy,dz):
   tf_buffer.set_transform(m,"")
   return translate_in_frame(ps,localname,dx,dy,dz)
 
+# get target_frame with respect to source_frame
+def get_frame(target_frame,source_frame):
+    #print 'translate_frame',pose
+    global tf_buffer
+    # https://answers.ros.org/question/222306/transform-a-pose-to-another-frame-with-tf2-in-python/
+    transform = tf_buffer.lookup_transform(source_frame,
+      target_frame,
+      rospy.Time(0), #get the tf at first available time
+      rospy.Duration(2.0)) #wait for 2 seconds
+    #print 'pose of',target_frame,'wrt',source_frame,':',transform
+    return transform
+
 # translate PoseStamped arg:ps into Pose with respect to arg:frame
 def translate_frame(ps,frame):
     #print 'translate_frame',pose
     global tf_buffer
     # https://answers.ros.org/question/222306/transform-a-pose-to-another-frame-with-tf2-in-python/
-    transform = tf_buffer.lookup_transform(frame,
-      ps.header.frame_id, #source frame
+    transform = tf_buffer.lookup_transform(frame, # source frame
+      ps.header.frame_id, # target frame
       rospy.Time(0), #get the tf at first available time
       rospy.Duration(2.0)) #wait for 2 seconds
     pose_transformed = tf2_geometry_msgs.do_transform_pose(ps, transform)
@@ -112,40 +124,47 @@ def make_seed(limb):
             seed.append(state[key])
         return seed
 
-# ps: PoseStamped
 def trac_ik_solve(limb, ps):
-        #print 'trac_ik_solve',limb,ps
-	time.sleep(1)
-	target_topic.publish(ps)
-	time.sleep(1)
-        command = make_seed(limb)
-	print 'candidate seed',command
+        print 'trac_ik_solve',limb,ps
+        target_topic.publish(ps)
+        seed1 = make_seed(limb)
+        print 'candidate seed based on current position',seed1
+        local_base_frame = limb+"_arm_mount"
+        soln1 = trac_ik_solve_with_seed(limb, ps, seed1)
+        if soln1:
+            print 'found solution searching from current position'
+            return soln1
+        print 'no solution found searching from current position',seed1
+        ik_solver = IK(local_base_frame,
+                       #limb+"_wrist",
+                       limb+"_gripper",
+                       urdf_string=urdf_str)
+        seed2 = [0.0] * len(seed1)
+        print 'candidate zero position seed',seed2
+        soln2 = trac_ik_solve_with_seed(limb, ps, seed2)
+        if soln2:
+            print 'found solution searching from zero position'
+            return soln2
+        print 'no solution found searching from zero position'
+        return None
+
+# ps: PoseStamped
+def trac_ik_solve_with_seed(limb, ps, seed):
         local_base_frame = limb+"_arm_mount"
         ik_solver = IK(local_base_frame,
                        #limb+"_wrist",
                        limb+"_gripper",
                        urdf_string=urdf_str)
-        seed_state = command
-        #seed_state = [0.0] * ik_solver.number_of_joints
-        # canonical pose in local_base_frame
-        #hdr = Header(stamp=rospy.Time.now(), frame_id=from_frame)
-        #ps = PoseStamped(
-        #        header=hdr,
-        #        pose=pose,
-        #        )
-	#gripper_ps = translate_in_frame(ps,'right_wrist',0,0,0)
-	#gripper_ps = translate_pose_in_own_frame(ps,'gripper_target',0.015,-0.02,-0.2)
 	gripper_ps = translate_pose_in_own_frame(ps,'gripper_target',0,0,0.05)
         p = translate_frame(gripper_ps,local_base_frame)
         #print 'translated frame',p
-        soln = ik_solver.get_ik(seed_state,
+        soln = ik_solver.get_ik(seed,
                         p.pose.position.x,p.pose.position.y,p.pose.position.z,  # X, Y, Z
                         p.pose.orientation.x, p.pose.orientation.y, p.pose.orientation.z, p.pose.orientation.w,  # QX, QY, QZ, QW
                         0.01,0.01,0.01,
                         0.1,0.1,0.1,
 
         )
-        print 'trac soln',soln
         return soln
 
 print 'get_param /robot_description...'
@@ -192,11 +211,13 @@ def make_move_baxter(msg, limb, speed):
 # msg: 7-vector of positions corresponding to joints
 # limb: 'left'|'right'
 def make_move_trac(msg, limb, speed):
+    if msg==None:
+        raise BaseException('no solution was provided')
     print 'make_move_trac',msg
     SPEED_SCALE = 1
     speed = speed * SPEED_SCALE
     arm = baxter_interface.Limb(limb)
-    print 'arm',arm
+    print 'make_move_trac arm',arm
     lj = arm.joint_names()
     command = {}
     # for i in range(0, len(msg.joints[0].name)):
@@ -215,13 +236,7 @@ def make_move_trac(msg, limb, speed):
 # limb: 'left'|'right'
 # ps: PoseStamped including header.frame_id
 def solve_move_trac(limb,ps):
-    print '*********************'
-    print 'solve_move_trac',limb,ps
     soln = trac_ik_solve(limb,ps)
-    if not soln:
-	print '***** NO SOLUTION ******',soln
-    else:
-        print 'soln',soln
     make_move_trac(soln, limb, 0.8)
 
 def recv_data(data):
@@ -345,6 +360,15 @@ def make_pose_stamped(pos,frame_id='base', ori=Quaternion(x=0, y=1, z=0, w=0)):
         pose=makepose(pos, ori),
   )
 
+def make_pose_stamped_rpy(pos=(0,0,0), frame_id='base', r=3.14, p=0.0, y=0.0):
+  print 'make_pose_stamped_rpy',r,p,y
+  ori = quaternion_from_euler(r, p, y)
+  print 'ori',ori
+  return PoseStamped(
+        header=Header(stamp=rospy.Time.now(), frame_id=frame_id),
+        pose=makepose(pos, Quaternion(x = ori[0], y=ori[1], z=ori[2], w=ori[3])),
+  )
+
 def make_pose_stamped_yaw(pos, frame_id='base', yaw=0):
   # yaw pitch roll
   print 'make_pose_stamped yaw',yaw
@@ -412,20 +436,20 @@ avgmarkerpos = {}
 def any_marker(marker):
   return True
 
-global target_marker_fn
-target_marker_fn = any_marker
+global _target_marker_fn
+_target_marker_fn = any_marker
 
 def block_nr(marker):
     return int(marker.id / 10) + 1
 
 def process_alvar(data, markerdata):
-  global target_marker_fn
+  global _target_marker_fn
   if data.markers:
       for marker in data.markers:
           frame = marker.header.frame_id
           #blocknr = int(marker.id / 10) + 1
           blocknr = block_nr(marker)
-          if target_marker_fn(marker): #frame != 'head_camera' and blocknr != 5:
+          if _target_marker_fn(marker): #frame != 'head_camera' and blocknr != 5:
               #if blocknr == target_cube:
               print 'alvar marker:',marker.id,'blocknr',blocknr,'frame',frame
                 #print '- pose',marker
@@ -476,6 +500,7 @@ def init_gripper(mylimb):
       except OSError:
 	print 'OSError'
 	success = False
+    gripper.calibrate()
     return gripper
 
 global avgpos
@@ -505,6 +530,8 @@ def getavgpos(target_marker_id):
     return (avgpos,avgyaw)
 
 def init(nodename='vxlab_ik_alvar_demo', target_marker_fn=any_marker):
+    global _target_marker_fn
+    _target_marker_fn = target_marker_fn
     print 'init node...'
     rospy.init_node(nodename, anonymous=True)
     print 'init node done'
