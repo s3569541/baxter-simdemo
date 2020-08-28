@@ -596,8 +596,8 @@ if coords.success:
   newpos = pose.position
   print('block current position',newpos)
   # should be 15cm higher
-  # note: more properly we would expect the cube to be approx 5cm below the 'frame' (camera) position
-  if (abs(newpos.x - truepos.x) < 0.04 and abs(newpos.y - truepos.y) < 0.04 and abs((newpos.z - truepos.z) - 0.14) < 0.04):
+  # note: we would also expect the cube to be approx 5cm below the "tool0"/gripper position
+  if (abs(newpos.x - truepos.x) < 0.04 and abs(newpos.y - truepos.y) < 0.04 and abs((newpos.z - truepos.z) - 0.16) < 0.04):
     print 'success'
     sys.exit(0)
   else:
