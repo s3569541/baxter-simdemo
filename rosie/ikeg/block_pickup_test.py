@@ -382,7 +382,7 @@ except rospy.ServiceException as e:
 
 model_coordinates = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
 
-block_objid = 'marker2'
+block_objid = 'marker1'
 
 print 'get position of marker'
 coords = model_coordinates(block_objid, parent_model)
@@ -411,12 +411,15 @@ gripper.set_holding_force(100)
 gripper.close()
 gripper.open()
 
+print 'pre grab'
 solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.20), frame_id='head'))
+print 'grab'
 solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.04), frame_id='head'))
 
 gripper.close()
 rospy.sleep(2.0)
 
+print 'lift'
 solve_move_trac(mylimb, make_pose_stamped(Point(x=pos.x, y=pos.y, z=pos.z+0.20), frame_id='head'))
 
 print 'get new position of marker'
@@ -427,7 +430,7 @@ if coords.success:
   newpos = pose.position
   # should be 15cm higher
   # note: we would also expect the cube to be approx 5cm below the tool 0 position
-  if (abs(newpos.x - pos.x) < 0.04 and abs(newpos.y - pos.y) < 0.04 and abs((newpos.z - pos.z) - 0.14) < 0.04):
+  if (abs(newpos.x - pos.x) < 0.04 and abs(newpos.y - pos.y) < 0.04 and abs((newpos.z - pos.z) - 0.16) < 0.04):
     print 'success'
     sys.exit(0)
   else:
