@@ -52,8 +52,12 @@ from std_msgs.msg import Header
 ### Needed?
 #mutex = threading.Lock()
 
+# TO DO: use laser rangefinder to improve z co-ordinate of block
+
 def this_marker(marker):
-    result = (marker.header.frame_id != 'head_camera') and (locallib.block_nr(marker) == 1)
+    # TO DO: handle markers other than the current known-top marker
+    #result = (marker.header.frame_id != 'head_camera') and (locallib.block_nr(marker) == 1)
+    result = (marker.header.frame_id != 'head_camera') and (marker.id == 5)
     return result
 
 locallib.init(nodename='pickup_alvar_demo',target_marker_fn=this_marker)
@@ -120,18 +124,48 @@ print 'gripper open'
 
 global avgpos
 global avgyaw
+global last_seen 
 avgpos = None
 avgyaw = None
+last_seen = None
 
-def getavgpos():
+#def getavgpos():
+#    global avgpos
+#    global avgyaw
+#    print 'awaiting marker update'
+#    rospy.sleep(2)
+#    result = locallib.getavgpos(target_marker_id)
+#    if result != None:
+#        (avgpos,avgyaw) = locallib.getavgpos(target_marker_id)
+#        print 'marker update:',(avgpos,avgyaw)
+
+def getavgpos(left_only=False):
     global avgpos
     global avgyaw
-    print 'awaiting marker update'
-    rospy.sleep(2)
-    result = locallib.getavgpos(target_marker_id)
-    if result != None:
-        (avgpos,avgyaw) = locallib.getavgpos(target_marker_id)
-        print 'marker update:',(avgpos,avgyaw)
+    global last_seen
+    avgmarkerpos = locallib.avgmarkerpos
+    d0 = {}
+    d = {}
+    print 'awaiting Alvar avg'
+    rospy.sleep(3)
+    if target_marker_id in avgmarkerpos:
+        d0 = avgmarkerpos[target_marker_id]
+    if 'right_hand_camera' and not left_only in d0:
+        d = d0['right_hand_camera']
+    if 'left_hand_camera' in d0:
+        d = d0['left_hand_camera']
+    if 'avg' in d:
+        avgpos = d['avg']
+        avgyaw = d['avg_rpy'][2]
+        last_seen = d['last_seen']
+    print '- alvar','avg pos',avgpos,'avg yaw',avgyaw,'last sighting',rospy.get_time() - last_seen,'s ago'
+
+def getavgpos_any():
+    getavgpos(left_only=False)
+
+def getavgpos_left():
+    getavgpos(left_only=True)
+
 
 # FIXME: back off and try from more positions
 # FIXME: point right camera at best guess position
@@ -139,30 +173,51 @@ def getavgpos():
 
 otherpose = locallib.get_frame(otherlimb+'_gripper','base')
 print 'camera on',otherlimb,'...'
-locallib.solve_move_trac(otherlimb, locallib.make_pose_stamped_rpy(otherpose.transform.translation, frame_id='base', r=3.14, p=0.01))
+locallib.solve_move_trac(otherlimb, locallib.make_pose_stamped_rpy(otherpose.transform.translation, frame_id='base', r=3.3, p=0.0))
 
-avgpos = None
-print '******* move to basic sighting pos ********'
-print 'look for cube from pos1'
-locallib.solve_move_trac(mylimb, locallib.make_pose_stamped(Point(x=0.49, y=-0.02, z=0.0), frame_id='base'))
-getavgpos()
-print 'look for cube from pos2'
-locallib.solve_move_trac(mylimb, locallib.make_pose_stamped(Point(x=0.49, y= 0.02, z=0.0), frame_id='base'))
-getavgpos()
+#print '******* move to basic sighting pos ********'
+#print 'look for cube from pos1'
+#locallib.solve_move_trac(mylimb, locallib.make_pose_stamped(Point(x=0.49, y=-0.02, z=0.0), frame_id='base'))
+#getavgpos_any()
+#print 'look for cube from pos2'
+#locallib.solve_move_trac(mylimb, locallib.make_pose_stamped(Point(x=0.49, y= 0.02, z=0.0), frame_id='base'))
+#getavgpos_any()
+#last_seen_sighting = last_seen
+#print "Last seen:", last_seen - last_seen_sighting, "since last sighting", "seen?", last_seen > last_seen_sighting
+#last_seen_sighting = last_seen
 
-# should have a sighting by now...?
+grab = False
+stage = 0
 
-print '******* move to proper sighting pos ********'
-getavgpos()
-locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x+0.1, y=avgpos.y, z=avgpos.z+0.20), frame_id='head', yaw=avgyaw))
-
-getavgpos()
-print '********* move to pregrab **********'
-locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x, y=avgpos.y, z=avgpos.z+0.12), frame_id='head', yaw=avgyaw))
-
-getavgpos()
-print '********* move to grab **********'
-locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x, y=avgpos.y, z=avgpos.z+0.04), frame_id='head', yaw=avgyaw))
+while not grab:
+    print 'stage',stage
+    if stage == 0:
+        # No sighting available
+        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped(Point(x=0.49, y=-0.02, z=0.2), frame_id='base'))
+        last_seen = 0
+        last_seen_sighting = 0
+    if stage == 1:
+        # Use whatever average position we have as a basis for first proper sighting
+        print '******* move to sighting pos ********'
+        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x+0.1, y=avgpos.y, z=avgpos.z+0.20), frame_id='head', yaw=avgyaw))
+    if stage == 2:
+        print '********* move to pregrab **********'
+        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x, y=avgpos.y, z=avgpos.z+0.12), frame_id='head', yaw=avgyaw))
+    if stage == 3:
+        print '********* move to grab **********'
+        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x, y=avgpos.y, z=avgpos.z+0.05), frame_id='head', yaw=avgyaw))
+        grab = True
+    # update vision QOS info
+    getavgpos_left()
+    vision_valid = last_seen > last_seen_sighting
+    print "Last seen:", last_seen - last_seen_sighting, "since last sighting"
+    print "Vision valid?", vision_valid
+    last_seen_sighting = last_seen
+    # if still have vision, proceed, otherwise back up
+    if vision_valid:
+        stage = stage + 1
+    else:
+        stage = 1
 
 ###
 ### Close grippers
