@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#git checkout blue-mir100
+#git pull
+
+# In case docker-compose does not kill all containers...
+# docker rm -f gazebo vxlab-rosie-nav novnc display2 alvar-head alvar-right
+
+echo args $#
+echo arg1 $1
+
+case "$#" in
+	1)
+		export SIMTESTS=${1}
+	;;
+esac
+
+# Do not spawn X applications interactively
+export XDISPLAY=novnc:0
+
+docker-compose down --remove-orphans && docker-compose -f docker-compose.test.yml build && \
+  docker-compose -f docker-compose.yml up --force-recreate -d
+
+./test "startup"

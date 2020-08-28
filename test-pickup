@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# In case docker-compose does not kill all containers...
+# docker rm -f gazebo vxlab-rosie-nav novnc display2 alvar-head alvar-right
+
+export BAXTER_ONLY=true
+
+while [ 1 ]
+do
+  #./test "vision_pickup_random_refactored vision_pickup_refactored vision_pickup_random vision_pickup pickup"
+  ./test "vision_pickup_random_refactored"
+done
