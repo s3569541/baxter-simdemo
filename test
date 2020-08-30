@@ -16,7 +16,8 @@ esac
 export XDISPLAY=novnc:0
 
 #docker-compose down --remove-orphans && docker-compose -f docker-compose.test.yml build && \
-echo running tests && \
+commit=`git rev-parse HEAD`
+echo "running tests for commit $commit" && \
   echo SIMTESTS: $SIMTESTS && \
   docker-compose -f docker-compose.yml -f docker-compose.test.yml up --force-recreate -d test
 

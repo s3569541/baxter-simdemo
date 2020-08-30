@@ -8,5 +8,5 @@ export BAXTER_ONLY=true
 while [ 1 ]
 do
   #./test "vision_pickup_random_refactored vision_pickup_refactored vision_pickup_random vision_pickup pickup"
-  ./test "vision_pickup_random_refactored"
+  ./test "vision_pickup_random_refactored vision_pickup_random_refactored vision_pickup_random_refactored vision_pickup_random_refactored vision_pickup_random_refactored vision_pickup_random_refactored vision_pickup_random_refactored vision_pickup_random_refactored vision_pickup_random_refactored vision_pickup_random_refactored"
 done
