@@ -6,8 +6,8 @@
 # In case docker-compose does not kill all containers...
 # docker rm -f gazebo vxlab-rosie-nav novnc display2 alvar-head alvar-right
 
-echo args $#
-echo arg1 $1
+#echo args $#
+#echo arg1 $1
 
 case "$#" in
 	1)
