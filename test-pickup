@@ -5,7 +5,7 @@
 
 export BAXTER_ONLY=true
 
-#./test-init
+./test-init
 
 while [ 1 ]
 do

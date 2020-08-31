@@ -23,7 +23,7 @@ delete_model marker1
 #rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.03 -z 0.8 -Y 0.7 -P -0.0 -R -0.0
 ~/rosie/spawn_random.py 1
 
-{ sleep 200 ; echo "$0 Timeout"; exit 1; } &
+{ sleep 250 ; echo "$0 Timeout"; exit 1; } &
 
 ./pickup_alvar_demo.py
 result=$?
