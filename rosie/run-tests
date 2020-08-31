@@ -25,9 +25,12 @@ mkdir -p $OUTDIR
 
 #TESTS="startup ${TESTS}"
 
-echo TESTS: ${TESTS} | tee -a $OUT
-echo BAXTER_ONLY: ${BAXTER_ONLY} | tee -a $OUT
-echo OUTDIR: ${OUTDIR} | tee -a $OUT
+{
+echo TESTS: ${TESTS}
+echo BAXTER_ONLY: ${BAXTER_ONLY}
+echo OUTDIR: ${OUTDIR}
+echo GIT_COMMIT: ${GIT_COMMIT}
+} | tee -a $OUT
 
 for test in ${TESTS}
 do
@@ -47,5 +50,5 @@ do
        banner="****"
     ;;
   esac
-  echo "$banner $result: $test: ${ELAPSEDTIME} sec $banner" |& tee -a $OUT
+  echo "$banner $result: $test: ${ELAPSEDTIME} sec $banner GIT_COMMIT $GIT_COMMIT BAXTER_ONLY $BAXTER_ONLY" |& tee -a $OUT
 done
