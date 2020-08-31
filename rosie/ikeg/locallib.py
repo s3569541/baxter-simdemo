@@ -403,6 +403,9 @@ def pairavg(a,b):
         print 'b is non numeric ',str(b)
     return (a + b) / 2
 
+def diff(a,b):
+    return Point(x=abs(a.x - b.x), y=abs(a.y - b.y), z=abs(a.z - b.z))
+
 def round(v):
   return math.floor(v * 1000) / 1000
 

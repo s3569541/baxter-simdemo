@@ -5,6 +5,8 @@
 
 export BAXTER_ONLY=true
 
+#./test-init
+
 while [ 1 ]
 do
   #./test "vision_pickup_random_refactored vision_pickup_refactored vision_pickup_random vision_pickup pickup"

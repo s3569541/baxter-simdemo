@@ -175,6 +175,9 @@ stage = 0
 def implies(p,q):
     return not(p) or q
 
+# assume in a fixed frame, such as 'head', so we can check for discontinuities
+pos_by_stage = {}
+
 while not grab:
     print 'stage',stage
     if stage == 0:
@@ -184,7 +187,7 @@ while not grab:
         last_seen = 0
         last_seen_sighting = 0
     if stage == 1:
-        # Use whatever average position we have as a basis for first proper sighting
+        # Use whatever average position we have as a basis for proper sighting
         print '******* move to sighting pos ********'
         locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x+0.1, y=avgpos.y, z=avgpos.z+0.20), frame_id='head', yaw=avgyaw))
     if stage == 2:
@@ -197,21 +200,30 @@ while not grab:
     # update vision QOS info
     # PASSING: getavgpos(left_only=(stage>=1))
     getavgpos(left_only=(stage>=2))
+    pos_by_stage[stage] = avgpos
     # for stage 3, pre: gripper centred on the marker
-    centred = pos_in_frame and abs(pos_in_frame.x)<0.05 and abs(pos_in_frame.y)<0.05
+    centred = pos_in_frame and abs(pos_in_frame.x)<0.03 and abs(pos_in_frame.y)<0.045
     fresh = last_seen > last_seen_sighting
-    vision_valid = fresh and implies(stage == 2, centred)
+    marker_stable = True
+    print 'stage:', stage, 'fresh?', fresh, 'pos in frame', pos_in_frame
+    if stage>0:
+        marker_movement = locallib.diff(pos_by_stage[stage], pos_by_stage[stage - 1])
+        marker_stable = (marker_movement.x < 0.02) and (marker_movement.y < 0.02) and (marker_movement.z < 0.02)
+        print '-', 'marker movement since last stage', marker_movement
+    vision_valid = fresh and implies(stage == 2, centred and marker_stable)
     last_seen_sighting = last_seen
     # if still have vision, proceed, otherwise back up
     if vision_valid:
         stage = stage + 1
     else:
-        stage = max(stage - 1, 0)
         if (stage == 2) and not centred:
-            print 'not centred:',pos_in_frame
-        if not fresh:
-            print 'not fresh'
+            print 'stage 2 and not centred'
+        stage = max(stage - 1, 0)
         print '-> stage',stage
+
+if not grab:
+    print 'unknown failure'
+    sys.exit(1)
 
 ###
 ### Close grippers

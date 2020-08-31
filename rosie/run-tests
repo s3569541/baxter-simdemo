@@ -33,10 +33,11 @@ for test in ${TESTS}
 do
   STARTTIME=$(date +%s)
   $SCRIPTDIR/tests/$test > ${OUTDIR}/${test}.out 2>&1
+  exitcode=$?
   ENDTIME=$(date +%s)
   ELAPSEDTIME=$(($ENDTIME - $STARTTIME))
   banner="    "
-  case $? in
+  case $exitcode in
     1) result=FAIL
        banner="****"
     ;;
@@ -46,5 +47,5 @@ do
        banner="****"
     ;;
   esac
-  echo "$banner $result: $test: ${ELAPSEDTIME} sec" |& tee -a $OUT
+  echo "$banner $result: $test: ${ELAPSEDTIME} sec $banner" |& tee -a $OUT
 done
