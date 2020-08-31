@@ -24,7 +24,7 @@ from tf.transformations import *
 
 from trac_ik_python.trac_ik import IK
 
-#import random
+import random
 
 import tf2_ros
 import tf2_geometry_msgs
@@ -180,7 +180,7 @@ while not grab:
     if stage == 0:
         # No sighting available
         print '******* move to fallback sighting pos ********'
-        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped(Point(x=0.49, y=-0.02, z=0.2), frame_id='base'))
+        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped(Point(x=0.49, y=0.0 + random.random() * 0.4, z=0.2), frame_id='base'))
         last_seen = 0
         last_seen_sighting = 0
     if stage == 1:
@@ -189,7 +189,7 @@ while not grab:
         locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x+0.1, y=avgpos.y, z=avgpos.z+0.20), frame_id='head', yaw=avgyaw))
     if stage == 2:
         print '********* move to pregrab **********'
-        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x, y=avgpos.y, z=avgpos.z+0.12), frame_id='head', yaw=avgyaw))
+        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x, y=avgpos.y, z=avgpos.z+0.13), frame_id='head', yaw=avgyaw))
     if stage == 3:
         print '********* move to grab **********'
         locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x, y=avgpos.y, z=avgpos.z+0.05), frame_id='head', yaw=avgyaw))
@@ -206,7 +206,7 @@ while not grab:
     if vision_valid:
         stage = stage + 1
     else:
-        stage = stage - 1
+        stage = max(stage - 1, 0)
         if (stage == 2) and not centred:
             print 'not centred:',pos_in_frame
         if not fresh:
