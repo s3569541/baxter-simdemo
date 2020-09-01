@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 
+# http://docs.ros.org/melodic/api/moveit_tutorials/html/index.html
 # https://github.com/ros-planning/moveit_tutorials/blob/kinetic-devel/doc/move_group_python_interface/scripts/move_group_python_interface_tutorial.py
 # https://github.com/ravijo/baxter_moveit_tutorial/blob/master/scripts/example.py
+# http://docs.ros.org/melodic/api/moveit_commander/html/classmoveit__commander_1_1move__group_1_1MoveGroupCommander.html
+# http://docs.ros.org/melodic/api/moveit_commander/html/move__group_8py_source.html
+#
+# (For pick and place) C++
+# http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/pick_place/pick_place_tutorial.html
 
 # Steps to run this code
 # 1) roslaunch baxter_moveit_tutorial moveit_init.launch
@@ -63,8 +69,12 @@ def moveit_baxter_example():
     wait_for_state_update(obj_name='box',box_is_known=True)
 
     # Planning to a Pose goal
-    left_current_pose = group.get_current_pose(end_effector_link='left_gripper').pose
+    left_current = group.get_current_pose(end_effector_link='left_gripper')
+    left_current_pose = left_current.pose
     right_current_pose = group.get_current_pose(end_effector_link='right_gripper').pose
+    print 'planning frame:',group.get_planning_frame()
+    print 'pose reference frame:',group.get_pose_reference_frame()
+    print 'left_current_pose',left_current
 
     left_target_pose = left_current_pose
     left_target_pose.position.x = left_current_pose.position.x - 0.1  # 0.1m = 10 cm

@@ -64,4 +64,6 @@
       <arg name="left_electric_gripper" value="$(arg left_electric_gripper)"/>
   </include>
 
+  <node pkg="tf" type="static_transform_publisher" name="baxter_map_static_transform_publisher" args="0 0 0 0 0 0 base map 20"/>
+
 </launch>
