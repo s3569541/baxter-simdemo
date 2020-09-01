@@ -15,6 +15,7 @@ services:
         environment:
         - TESTS=${SIMTESTS}
         - BAXTER_ONLY=${BAXTER_ONLY}
+        - GIT_COMMIT=${GIT_COMMIT}
 
 networks:
     vxlab:
