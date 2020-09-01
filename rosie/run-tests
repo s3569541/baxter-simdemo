@@ -50,5 +50,5 @@ do
        banner="****"
     ;;
   esac
-  echo "$banner $result: $test: ${ELAPSEDTIME} sec $banner GIT_COMMIT $GIT_COMMIT BAXTER_ONLY $BAXTER_ONLY" |& tee -a $OUT
+  echo "$banner $result: $test: ${ELAPSEDTIME} sec $banner started $STARTTIME" |& tee -a $OUT
 done
