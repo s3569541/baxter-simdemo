@@ -34,8 +34,10 @@ echo GIT_COMMIT: ${GIT_COMMIT}
 
 for test in ${TESTS}
 do
+  set -xv
   STARTTIME=$(date +%s)
-  $SCRIPTDIR/tests/$test > ${OUTDIR}/${test}.out 2>&1
+  $SCRIPTDIR/tests/$test >> ${OUTDIR}/${test}.out 2>&1
+  #####$SCRIPTDIR/tests/$test |& tee -a ${OUTDIR}/${test}.out
   exitcode=$?
   ENDTIME=$(date +%s)
   ELAPSEDTIME=$(($ENDTIME - $STARTTIME))

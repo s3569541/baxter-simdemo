@@ -21,5 +21,7 @@ rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model 
 ./pickup_alvar_demo.py
 result=$?
 
+echo "$0: test exited with $result"
+
 delete_model marker1
 exit $result
