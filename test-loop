@@ -14,7 +14,7 @@ do
     ./test-init
     n=0
     while [ "$n" -lt 10 ] && [ ! -e filename ]; do
-	./test "vision_pickup_refactored vision_pickup_random vision_pickup pickup"
+	./test "vision_pickup_random_refactored vision_pickup_refactored vision_pickup_random vision_pickup pickup"
 	n=$(( n + 1 ))
     done
 
