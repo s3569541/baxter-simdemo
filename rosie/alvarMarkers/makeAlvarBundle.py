@@ -61,7 +61,7 @@ def makepose(pos, orientation=Quaternion(x=0, y=1, z=0, w=0)):
 
 def make_pose_stamped_rpy(pos=(0,0,0), frame_id='base', r=3.14, p=0.0, y=0.0):
   print 'make_pose_stamped_rpy',r,p,y
-  ori = quaternion_from_euler(r, p, y)
+  ori = quaternion_from_euler(r,p,y)
   print 'ori',ori
   return PoseStamped(
         header=Header(stamp=rospy.Time.now(), frame_id=frame_id),
@@ -71,53 +71,57 @@ def make_pose_stamped_rpy(pos=(0,0,0), frame_id='base', r=3.14, p=0.0, y=0.0):
 broadcaster = tf2_ros.StaticTransformBroadcaster()
 from geometry_msgs.msg import TransformStamped
 
-for i in range(1):
-  baseval = i*10
+masterFrames = {}
+markerFrames = {}
+
+for bi in range(5):
+  blocknr = bi + 1
+  baseval = bi * 10
   # generate png
-  print 'generating bundle for cube #',i
-  # http://wiki.ros.org/ar_track_alvar#ar_track_alvar.2Fpost-fuerte.Detecting_multi-tag_bundles
-  # positive-z comes out of the front of the tag toward the viewer, positive-x is to the right, and positive-y is up
-  with open('block'+str(i)+'bundle.xml', 'w') as f:
+  print 'generating bundle for cube #',blocknr
+  with open('block'+str(blocknr)+'bundle.xml', 'w') as f:
+    f.write('<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n<multimarker markers="6">\n')
     masterFrame = TransformStamped()
     masterFrame.header=Header(stamp=rospy.Time.now(), frame_id = 'world')
-    masterFrameId = 'master'
+    masterFrameId = 'bundle_master'+str(bi)
     masterFrame.child_frame_id = masterFrameId
-    quat = tf.transformations.quaternion_from_euler(0.0,0.0,0.0)
-    masterFrame.transform.rotation.x = quat[0]
-    masterFrame.transform.rotation.y = quat[1]
-    masterFrame.transform.rotation.z = quat[2]
-    masterFrame.transform.rotation.w = quat[3]
-    print 'rot',masterFrame.transform.rotation
     masterFrame.transform.translation = Point(x=0,y=0,z=0)
-    broadcaster.sendTransform(masterFrame)
+    quat = Quaternion(x=0,y=0,z=0,w=1.0)
+    masterFrame.transform.rotation = quat
+    masterFrames[bi] = masterFrame
+    broadcaster.sendTransform(masterFrames[bi])
     def doMarker(id,pos,r,p,y):
       markerFrame = TransformStamped()
       markerFrame.header=Header(stamp=rospy.Time.now(), frame_id = masterFrameId)
-      markerFrameId = 'marker'+str(id)
+      markerFrameId = 'bundle_marker'+str(id)
       markerFrame.child_frame_id = markerFrameId
       markerFrame.transform.translation = pos
-      quat = tf.transformations.quaternion_from_euler(r,p,y)
-      markerFrame.transform.rotation.x = quat[0]
-      markerFrame.transform.rotation.y = quat[1]
-      markerFrame.transform.rotation.z = quat[2]
-      markerFrame.transform.rotation.w = quat[3]
-      broadcaster.sendTransform(markerFrame)
-      o = -0.017
+      markerFrame.transform.rotation = quat
+      print 'identity quat',markerFrame.transform.rotation
+      markerFrames[bi] = markerFrame
+      broadcaster.sendTransform(markerFrames[bi])
+      o = 0.019
       f.write('<marker index="'+str(id)+'" status="1">\n')
       def myround(x):
         return math.floor(x * 1000) / 1000
       def tr(cx,cy,cz):
         corner = PoseStamped(
-                header=Header(stamp=rospy.Time.now(), frame_id='marker'+str(id)),
-                pose=Pose(position=Point(x=cx, y=cy, z=cz))
+                header=Header(stamp=rospy.Time.now(), frame_id = markerFrameId),
+                pose=Pose(position=Point(x=cx, y=cy, z=cz),
+			  orientation=quat
+			 )	
                 )
         result = translate_frame(corner, masterFrameId).pose.position
-        return Point(x=myround(result.x), y=myround(result.y), z=myround(result.z))
-      p = tr(-o, y, 0)
-      f.write('  <corner x="'+str(p.x)+'" y="'+str(p.y)+'" z="'+str(p.z)+'" />\n')
-      p = tr( o, y, 0)
-      f.write('  <corner x="'+str(p.x)+'" y="'+str(p.y)+'" z="'+str(p.z)+'" />\n')
+        f.write('  <!-- '+str(myround(result.x))+' '+str(myround(result.y))+' '+str(myround(result.z))+' -->\n')
+        # http://wiki.ros.org/ar_track_alvar#ar_track_alvar.2Fpost-fuerte.Detecting_multi-tag_bundles
+        # positive-z comes out of the front of the tag toward the viewer, positive-x is to the right, and positive-y is up
+        # x=ros_y, y=-ros_x, z=ros_y->z
+        return Point(x=100*myround(result.y), y=-100*myround(result.x), z=100*myround(result.z))
       p = tr( o,-o, 0)
+      f.write('  <corner x="'+str(p.x)+'" y="'+str(p.y)+'" z="'+str(p.z)+'" />\n')
+      p = tr( o, o, 0)
+      f.write('  <corner x="'+str(p.x)+'" y="'+str(p.y)+'" z="'+str(p.z)+'" />\n')
+      p = tr(-o, o, 0)
       f.write('  <corner x="'+str(p.x)+'" y="'+str(p.y)+'" z="'+str(p.z)+'" />\n')
       p = tr(-o,-o, 0)
       f.write('  <corner x="'+str(p.x)+'" y="'+str(p.y)+'" z="'+str(p.z)+'" />\n')
@@ -138,6 +142,6 @@ for i in range(1):
     doMarker(3+baseval,Point(x=0,y=0,z=0),0,    3*qt, 0)
     doMarker(4+baseval,Point(x=0,y=0,z=0),0,    +qt,    0)
     doMarker(5+baseval,Point(x=0,y=0,z=0),0,    -qt,    0)
-  stream = os.popen('/opt/ros/melodic/lib/ar_track_alvar/createMarker -p < /tmp/marker.in')
-  output = stream.read()
-  output
+    f.write('</multimarker>\n')
+
+rospy.spin()

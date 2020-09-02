@@ -54,7 +54,9 @@ RUN source /opt/ros/${ROS_DISTRO}/setup.bash && catkin config --extend /opt/ros/
 
 RUN echo force rebuild
 COPY alvar_baxter_vxlab.launch alvar_baxter_vxlab.launch
+COPY vxlab_bundle.launch vxlab_bundle.launch
 COPY start start
+COPY bundles bundles
 
 WORKDIR /root
 COPY rosenv rosenv
