@@ -15,7 +15,6 @@ esac
 # Do not spawn X applications interactively
 export XDISPLAY=novnc:0
 
-#docker-compose down --remove-orphans && docker-compose -f docker-compose.test.yml build && \
 export GIT_COMMIT=`git rev-parse HEAD`
 echo "running tests for commit $GIT_COMMIT" && \
-  docker-compose -f docker-compose.yml -f docker-compose.test.yml up test
+  docker-compose -f docker-compose.yml -f docker-compose.test.yml run test bash -c "source ~/.bashrc ; ~/rosie/run-tests"

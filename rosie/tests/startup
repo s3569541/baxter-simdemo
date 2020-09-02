@@ -8,7 +8,8 @@ set -xv
 while [ "$ready" -eq "0" ];
 do
 	echo 'Awaiting ROS master'
-	rostopic pub /test_status std_msgs/String 'Test service started' -1 && rostopic echo /clock -n 1 && ready=1
+	#rostopic pub /test_status std_msgs/String 'Test service started' -1 && rostopic echo /clock -n 1 && ready=1
+	rostopic echo /clock -n 1 && ready=1
 	sleep 1
 done
 
@@ -18,3 +19,5 @@ echo 'Listening for events'
 rostopic echo /rosie/sim/events/data &
 
 rostopic echo -n 1 --filter "m.data=='Sim started'" /rosie/sim/events/data | grep "Sim started"
+
+rosparam get /sim/started | grep true

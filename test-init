@@ -20,4 +20,6 @@ export XDISPLAY=novnc:0
 
 docker-compose down --remove-orphans && docker-compose -f docker-compose.yml up --force-recreate -d
 
+#docker logs -f gazebo &
+
 ./test "startup"

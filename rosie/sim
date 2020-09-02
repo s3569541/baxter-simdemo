@@ -79,6 +79,9 @@ echo "Objects spawned"
 # TO DO: make headcentre synchronous / reliable
 sleep 5
 ~/rosie/await_simulator_is_loaded.py || cleanup
+
+rosparam set /sim/started true
+
 rostopic pub /rosie/sim/events std_msgs/String 'Sim started' -1
 
 #date > packages.log
