@@ -1,0 +1,36 @@
+<marker index="0" status="1">
+  <corner x="0.017" y="0.0" z="0.0" />
+  <corner x="-0.017" y="0.0" z="0.0" />
+  <corner x="-0.017" y="0.017" z="0.0" />
+  <corner x="0.017" y="0.017" z="0.0" />
+</marker>
+<marker index="1" status="1">
+  <corner x="0.0" y="0.0" z="-0.017" />
+  <corner x="-0.001" y="0.0" z="0.017" />
+  <corner x="-0.001" y="0.017" z="0.017" />
+  <corner x="0.0" y="0.017" z="-0.017" />
+</marker>
+<marker index="2" status="1">
+  <corner x="-0.017" y="0.0" z="-0.001" />
+  <corner x="0.017" y="0.0" z="0.0" />
+  <corner x="0.017" y="0.017" z="0.0" />
+  <corner x="-0.017" y="0.017" z="-0.001" />
+</marker>
+<marker index="3" status="1">
+  <corner x="-0.001" y="0.0" z="0.017" />
+  <corner x="0.0" y="0.0" z="-0.017" />
+  <corner x="0.0" y="0.017" z="-0.017" />
+  <corner x="-0.001" y="0.017" z="0.017" />
+</marker>
+<marker index="4" status="1">
+  <corner x="0.0" y="0.0" z="-0.017" />
+  <corner x="-0.001" y="0.0" z="0.017" />
+  <corner x="-0.001" y="0.017" z="0.017" />
+  <corner x="0.0" y="0.017" z="-0.017" />
+</marker>
+<marker index="5" status="1">
+  <corner x="0.0" y="0.0" z="0.017" />
+  <corner x="-0.001" y="0.0" z="-0.017" />
+  <corner x="-0.001" y="0.017" z="-0.017" />
+  <corner x="0.0" y="0.017" z="0.017" />
+</marker>
