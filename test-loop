@@ -8,13 +8,31 @@ do
 
     git pull
 
+    ./rebuild
+
     export BAXTER_ONLY=true
     ./test-init
-    ./test "vision_pickup_refactored vision_pickup_random vision_pickup pickup"
+    n=0
+    while [ "$n" -lt 10 ] && [ ! -e filename ]; do
+	./test "vision_pickup_refactored vision_pickup_random vision_pickup pickup"
+	n=$(( n + 1 ))
+    done
+
+    export BAXTER_ONLY=false
+    n=0
+    while [ "$n" -lt 10 ] && [ ! -e filename ]; do
+        # respawn robot requires restart of simulation
+        ./test-init
+	./test "navigation"
+	n=$(( n + 1 ))
+    done
 
     export BAXTER_ONLY=false
     ./test-init
-    ./test "navigation"
-    ./test "vision_pickup_refactored vision_pickup_random vision_pickup pickup"
+    n=0
+    while [ "$n" -lt 10 ] && [ ! -e filename ]; do
+	./test "vision_pickup_refactored vision_pickup_random vision_pickup pickup"
+	n=$(( n + 1 ))
+    done
 
 done
