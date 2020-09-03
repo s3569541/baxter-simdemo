@@ -59,15 +59,6 @@ def makepose(pos, orientation=Quaternion(x=0, y=1, z=0, w=0)):
             )
     return pose_right
 
-def make_pose_stamped_rpy(pos=(0,0,0), frame_id='base', r=3.14, p=0.0, y=0.0):
-  print 'make_pose_stamped_rpy',r,p,y
-  ori = quaternion_from_euler(r,p,y)
-  print 'ori',ori
-  return PoseStamped(
-        header=Header(stamp=rospy.Time.now(), frame_id=frame_id),
-        pose=Pose(position=pos, orientation=Quaternion(x = ori[0], y=ori[1], z=ori[2], w=ori[3])),
-  )
-
 broadcaster = tf2_ros.StaticTransformBroadcaster()
 from geometry_msgs.msg import TransformStamped
 
@@ -79,8 +70,10 @@ for bi in range(5):
   baseval = bi * 10
   # generate png
   print 'generating bundle for cube #',blocknr
-  with open('block'+str(blocknr)+'bundle.xml', 'w') as f:
-    f.write('<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n<multimarker markers="6">\n')
+  # half block width
+  o2 = 0.02
+  with open('bundles/block'+str(blocknr)+'bundle.xml', 'w') as f:
+    f.write('<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n<multimarker markers="4">\n')
     masterFrame = TransformStamped()
     masterFrame.header=Header(stamp=rospy.Time.now(), frame_id = 'world')
     masterFrameId = 'bundle_master'+str(bi)
@@ -96,7 +89,8 @@ for bi in range(5):
       markerFrameId = 'bundle_marker'+str(id)
       markerFrame.child_frame_id = markerFrameId
       markerFrame.transform.translation = pos
-      markerFrame.transform.rotation = quat
+      ori = quaternion_from_euler(r, p, y)
+      markerFrame.transform.rotation = Quaternion(x = ori[0], y=ori[1], z=ori[2], w=ori[3])
       print 'identity quat',markerFrame.transform.rotation
       markerFrames[bi] = markerFrame
       broadcaster.sendTransform(markerFrames[bi])
@@ -136,12 +130,12 @@ for bi in range(5):
     # quarter turn euler angle
     pi = math.pi
     qt = 2*pi/4
-    doMarker(0+baseval,Point(x=0,y=0,z=0),0,    0,    0)
-    doMarker(1+baseval,Point(x=0,y=0,z=0),0,    qt,   0)
-    doMarker(2+baseval,Point(x=0,y=0,z=0),0,    2*qt, 0)
-    doMarker(3+baseval,Point(x=0,y=0,z=0),0,    3*qt, 0)
-    doMarker(4+baseval,Point(x=0,y=0,z=0),0,    +qt,    0)
-    doMarker(5+baseval,Point(x=0,y=0,z=0),0,    -qt,    0)
+    doMarker(0+baseval,Point(x=  0, y= 0,  z= 0)   ,   0,    0,   0)
+    doMarker(1+baseval,Point(x= o2, y= 0,  z=-o2)  ,   0,  -qt,   0)
+    doMarker(2+baseval,Point(x=  0, y= 0,  z=-2*o2),   0, 2*qt,   0)
+    doMarker(3+baseval,Point(x=-o2, y= 0,  z=-o2)  ,   0,   qt,   0)
+    doMarker(4+baseval,Point(x=  0, y=-o2, z=-o2)  ,   0,   qt,  qt)
+    doMarker(5+baseval,Point(x=  0, y= o2, z=-o2)   ,  0,   qt, -qt)
     f.write('</multimarker>\n')
 
 rospy.spin()

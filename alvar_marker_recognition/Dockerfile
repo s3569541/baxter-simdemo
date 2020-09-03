@@ -57,7 +57,11 @@ COPY alvar_baxter_vxlab.launch alvar_baxter_vxlab.launch
 COPY vxlab_bundle.launch vxlab_bundle.launch
 COPY start start
 COPY startalvar startalvar
-COPY bundles bundles
+COPY bundles/block1bundle.xml bundles/block1bundle.xml
+COPY bundles/block2bundle.xml bundles/block2bundle.xml
+COPY bundles/block3bundle.xml bundles/block3bundle.xml
+COPY bundles/block4bundle.xml bundles/block4bundle.xml
+COPY bundles/block5bundle.xml bundles/block5bundle.xml
 
 WORKDIR /root
 COPY rosenv rosenv

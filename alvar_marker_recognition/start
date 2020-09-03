@@ -3,7 +3,7 @@
 
 echo start: $0
 
-echo Wait 100s for master to start...
+echo Wait for master to start...
 #sleep 100
 sleep 10
 
@@ -29,7 +29,7 @@ export marker_size="50.0"
 case $LIMB in
     left*|right*)
 	#marker_size=2.8 
-	export marker_size=4.0
+	export marker_size=3.8
 	# working but too big to grasp
 	#marker_size=10.0
     ;;	     
