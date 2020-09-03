@@ -4,15 +4,18 @@
 echo start: $0
 
 echo Wait 100s for master to start...
-sleep 100
+#sleep 100
+sleep 10
 
 source ~/rosenv
 #source ~/ws_baxter/devel/setup.bash
 source ~/ws_alvar/devel/setup.bash --extend
 
 # left_hand, right_hand or head
-arm=$LIMB
-gain=0
+export gain=0
+
+export arm=$LIMB
+export LIMB=$LIMB
 
 echo LIMB $LIMB ARM $arm ROS_IP $ROS_IP ROS_MASTER_URI $ROS_MASTER_URI
 
@@ -21,12 +24,12 @@ set -xv
 # temporarily disabled for sim?
 #rosrun ar_track_alvar camera_controlx.py -o ${arm}_camera -r 1280x800 -g $gain
 
-marker_size="50.0"
+export marker_size="50.0"
 
 case $LIMB in
     left*|right*)
 	#marker_size=2.8 
-	marker_size=4.0
+	export marker_size=4.0
 	# working but too big to grasp
 	#marker_size=10.0
     ;;	     
@@ -35,7 +38,8 @@ esac
 while true
 do
   set -xv
-  roslaunch ./alvar_baxter_vxlab.launch limb:="${arm}" marker_size:="${marker_size}"
+  #roslaunch ./alvar_baxter_vxlab.launch limb:="${arm}" marker_size:="${marker_size}"
   #roslaunch ./vxlab_bundle.launch limb:="${arm}" marker_size:="${marker_size}"
+  /root/ws_alvar/startalvar
   sleep 5
 done

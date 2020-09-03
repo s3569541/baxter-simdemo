@@ -1,0 +1,16 @@
+<launch>
+	<arg name="marker_size" default="3.8" />
+	<arg name="max_new_marker_error" default="0.08" />
+	<arg name="max_track_error" default="0.0" />
+
+	<arg name="cam_image_topic" default="/cameras/$(arg limb)_camera/image" />
+	<arg name="cam_info_topic" default="/cameras/$(arg limb)_camera/camera_info" />
+	<arg name="output_frame" default="$(arg limb)_camera" />
+
+        <arg name="med_filt_size" default="10" />
+	<arg name="bundle_files" default="/root/ws_alvar/bundles/block1bundle.xml /root/ws_alvar/bundles/block2bundle.xml /root/ws_alvar/bundles/block3bundle.xml /root/ws_alvar/bundles/block4bundle.xml /root/ws_alvar/bundles/block5bundle.xml" />
+
+	<!-- ./findMarkerBundles <marker size in cm> <max new marker error> <max track error> <cam image topic> <cam info topic> <output frame> <list of bundle XML files...> -->
+	<!-- <node name="ar_track_alvar" pkg="ar_track_alvar" type="findMarkerBundlesNoKinect" respawn="false" output="screen" args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame) $(arg bundle_files)" /> -->
+	<node name="ar_track_alvar" pkg="ar_track_alvar" type="findMarkerBundlesNoKinect" respawn="false" output="screen" args="3.6 $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame) $(arg bundle_files)" />
+</launch>

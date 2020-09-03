@@ -56,6 +56,7 @@ RUN echo force rebuild
 COPY alvar_baxter_vxlab.launch alvar_baxter_vxlab.launch
 COPY vxlab_bundle.launch vxlab_bundle.launch
 COPY start start
+COPY startalvar startalvar
 COPY bundles bundles
 
 WORKDIR /root
