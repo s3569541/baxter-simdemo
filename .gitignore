@@ -18,3 +18,4 @@ rosenv.local.bash
 *.pyc
 robot_description
 *.bag
+core
