@@ -73,7 +73,7 @@ for bi in range(5):
   # half block width
   o2 = 0.02
   with open('bundles/block'+str(blocknr)+'bundle.xml', 'w') as f:
-    f.write('<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n<multimarker markers="4">\n')
+    f.write('<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n<multimarker markers="6">\n')
     masterFrame = TransformStamped()
     masterFrame.header=Header(stamp=rospy.Time.now(), frame_id = 'world')
     masterFrameId = 'bundle_master'+str(bi)
@@ -134,8 +134,8 @@ for bi in range(5):
     doMarker(1+baseval,Point(x= o2, y= 0,  z=-o2)  ,   0,  -qt,   0)
     doMarker(2+baseval,Point(x=  0, y= 0,  z=-2*o2),   0, 2*qt,   0)
     doMarker(3+baseval,Point(x=-o2, y= 0,  z=-o2)  ,   0,   qt,   0)
-    doMarker(4+baseval,Point(x=  0, y=-o2, z=-o2)  ,   0,   qt,  qt)
-    doMarker(5+baseval,Point(x=  0, y= o2, z=-o2)   ,  0,   qt, -qt)
+    doMarker(4+baseval,Point(x=  0, y=-o2, z=-o2)  ,   0,  -qt,  qt)
+    doMarker(5+baseval,Point(x=  0, y= o2, z=-o2)   ,  0,  -qt, -qt)
     f.write('</multimarker>\n')
 
 rospy.spin()
