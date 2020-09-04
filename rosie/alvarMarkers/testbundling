@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo 3 4
+../spawn1 3.14 0 -0.35 ; rostopic echo /visualization_marker | egrep -A2 'left|right' | grep 'id: [0-9]' | head -10 | sort | uniq
+
+echo 2 5
+../spawn1 0 0 1.5 ; rostopic echo /visualization_marker | egrep -A2 'left|right' | grep 'id: [0-9]' | head -10 | sort | uniq
+
+echo 1 5
+../spawn1 0 0 3.14 ; rostopic echo /visualization_marker | egrep -A2 'left|right' | grep 'id: [0-9]' | head -10 | sort | uniq
+
+echo 0 5
+../spawn1 0 0 -1.5 ; rostopic echo /visualization_marker | egrep -A2 'left|right' | grep 'id: [0-9]' | head -10 | sort | uniq
+
+echo 3 5
+../spawn1 0 0 0 ; rostopic echo /visualization_marker | egrep -A2 'left|right' | grep 'id: [0-9]' | head -10 | sort | uniq
+

@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#roll=${1:-0.0}
+roll=${1:-1.56}
+pitch=${2:-0.0}
+#yaw=${3:-0.7}
+yaw=${3:-0.0}
+
 # Gazebo / Baxter drivers do not respond well to malformed deletes ... ?
 # Appears to cause failure with error: "[FATAL] [1597221904.084218604]: The internal stop and start request lists are not empty at the beginning of the swithController() call. This should not happen."
 
@@ -10,8 +16,12 @@ function delete_model() {
 }
 
 delete_model marker1
-delete_model marker2
-delete_model marker3
 
-#rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.0 -z 0.8
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.03 -z 0.8 -Y 0.7 -P -0.0 -R -0.0
+# master marker on top: ./spawn1 -1.56 0.0 0.0 (alvar: 0,0,-1.2)
+# master marker on bot: ./spawn1 1.56 0.0 0.0  (alvar: 0,0,-1.2)
+# master marker front: ./spawn1 -1.56 0.0 0.0  (alvar: 0,0,-1.2)
+# FAILING: ../spawn1 0 0 0.8
+# 0,1,2,4: ../spawn1 1.54 0 2.74
+
+##########rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.03 -z 0.8 -R $roll -P $pitch -Y $yaw
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.7 -y 0.1 -z 0.8 -R $roll -P $pitch -Y $yaw

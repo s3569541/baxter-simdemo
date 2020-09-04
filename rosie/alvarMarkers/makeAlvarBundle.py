@@ -131,11 +131,11 @@ for bi in range(5):
     pi = math.pi
     qt = 2*pi/4
     doMarker(0+baseval,Point(x=  0, y= 0,  z= 0)   ,   0,    0,   0)
-    doMarker(1+baseval,Point(x= o2, y= 0,  z=-o2)  ,   0,  -qt,   0)
+    doMarker(1+baseval,Point(x= o2, y= 0,  z=-o2)  ,   0,   qt,   0)
     doMarker(2+baseval,Point(x=  0, y= 0,  z=-2*o2),   0, 2*qt,   0)
-    doMarker(3+baseval,Point(x=-o2, y= 0,  z=-o2)  ,   0,   qt,   0)
-    doMarker(4+baseval,Point(x=  0, y=-o2, z=-o2)  ,   0,  -qt,  qt)
-    doMarker(5+baseval,Point(x=  0, y= o2, z=-o2)   ,  0,  -qt, -qt)
+    doMarker(3+baseval,Point(x=-o2, y= 0,  z=-o2)  ,   0, 3*qt,   0)
+    doMarker(4+baseval,Point(x=  0, y=-o2, z=-o2)  ,   0,   qt, -qt)
+    doMarker(5+baseval,Point(x=  0, y= o2, z=-o2)  ,   0,   qt,  qt)
     f.write('</multimarker>\n')
 
 rospy.spin()

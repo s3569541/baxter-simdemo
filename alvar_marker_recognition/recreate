@@ -1,0 +1,4 @@
+./update-bundles
+docker-compose build --force-rm alvar-left alvar-right
+docker-compose up --force-recreate -d alvar-left alvar-right
+docker exec -it alvar-left cat bundles/block1bundle.xml
