@@ -56,8 +56,8 @@ from std_msgs.msg import Header
 
 def this_marker(marker):
     # TO DO: handle markers other than the current known-top marker
-    #result = (marker.header.frame_id != 'head_camera') and (locallib.block_nr(marker) == 1)
-    result = (marker.header.frame_id != 'head_camera') and (marker.id == 5)
+    # effectively marker.id is now (block number - 1) with bundles
+    result = (marker.header.frame_id != 'head_camera') and (marker.id == target_marker_id)
     return result
 
 locallib.init(nodename='pickup_alvar_demo',target_marker_fn=this_marker)
@@ -70,7 +70,7 @@ target_cube = 1
 global target_object
 target_object = 'marker'+str(target_cube)
 global target_marker_id
-target_marker_id = 5
+target_marker_id = 0
 
 #######################################################################################
 # Optional: for testing: do we have Baxter or Rosie? (only available during simulation)
@@ -138,6 +138,8 @@ def getavgpos(left_only=False):
     global avgyaw
     global last_seen
     global pos_in_frame
+    global topbot
+    global center_pose
     avgmarkerpos = locallib.avgmarkerpos
     d0 = {}
     d = {}
@@ -150,13 +152,23 @@ def getavgpos(left_only=False):
     if 'left_hand_camera' in d0:
         d = d0['left_hand_camera']
     if 'avg' in d:
-        avgpos = d['avg']
-        avgyaw = d['avg_rpy'][2]
-        last_seen = d['last_seen']
         marker = d['marker']
+        (topbot,center_pose) = locallib.get_top_or_bot_blockface(marker,d['avg_master_pose'])
+        #avgpos = d['avg']
+        avgpos = center_pose.pose.position
+        #avgyaw = d['avg_rpy'][2]
+        rpy = locallib.euler_from_quat(topbot.pose.orientation)
+        print 'avgpos',avgpos,'rpy',rpy
+        avgyaw = rpy[2]
+        # experimental: canonicalise yaw to improve stability of path to pickup (suspect yaw sometimes "flips" to different representation of same canonical angle??)
+        while avgyaw < 0:
+            avgyaw = avgyaw + math.pi
+        while avgyaw > math.pi:
+            avgyaw = avgyaw - math.pi
+        last_seen = d['last_seen']
         pos_in_frame = marker.pose.pose.position
         frame = d['frame']
-        print '- getavgpos','avg pos',avgpos,'avg yaw',avgyaw,'last sighting',rospy.get_time() - last_seen,'s ago'
+        print '- getavgpos','avg pos',avgpos,'avg rpy',d['avg_rpy'],'last sighting',rospy.get_time() - last_seen,'s ago'
         print '- marker wrt ',frame,':',pos_in_frame.x,pos_in_frame.y,pos_in_frame.z
         return True
     return False
@@ -178,7 +190,11 @@ def implies(p,q):
 # assume in a fixed frame, such as 'head', so we can check for discontinuities
 pos_by_stage = {}
 
+global last_seen_yaw
+last_seen_yaw = 0
+
 while not grab:
+    global last_seen_yaw
     print 'stage',stage
     if stage == 0:
         # No sighting available
@@ -189,29 +205,36 @@ while not grab:
     if stage == 1:
         # Use whatever average position we have as a basis for proper sighting
         print '******* move to sighting pos ********'
-        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x+0.1, y=avgpos.y, z=avgpos.z+0.20), frame_id='head', yaw=avgyaw))
+        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x+0.1, y=avgpos.y, z=avgpos.z+0.22), frame_id='head', yaw=avgyaw))
     if stage == 2:
         print '********* move to pregrab **********'
-        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x, y=avgpos.y, z=avgpos.z+0.13), frame_id='head', yaw=avgyaw))
+        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x, y=avgpos.y, z=avgpos.z+0.18), frame_id='head', yaw=avgyaw))
+        rospy.sleep(1)
     if stage == 3:
         print '********* move to grab **********'
-        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x, y=avgpos.y, z=avgpos.z+0.05), frame_id='head', yaw=avgyaw))
+        locallib.solve_move_trac(mylimb, locallib.make_pose_stamped_yaw(Point(x=avgpos.x, y=avgpos.y, z=avgpos.z+0.08), frame_id='head', yaw=avgyaw))
         grab = True
     # update vision QOS info
     # PASSING: getavgpos(left_only=(stage>=1))
+    # DELAY here
     getavgpos(left_only=(stage>=2))
     pos_by_stage[stage] = avgpos
     # for stage 3, pre: gripper centred on the marker
-    centred = pos_in_frame and abs(pos_in_frame.x)<0.03 and abs(pos_in_frame.y)<0.045
+    centred = pos_in_frame and abs(pos_in_frame.x)<0.03 and abs(pos_in_frame.y)<0.1
     fresh = last_seen > last_seen_sighting
     marker_stable = True
+    yaw_stable = abs(last_seen_yaw - avgyaw) < (math.pi/20)
     print 'stage:', stage, 'fresh?', fresh, 'pos in frame', pos_in_frame
     if stage>0:
         marker_movement = locallib.diff(pos_by_stage[stage], pos_by_stage[stage - 1])
         marker_stable = (marker_movement.x < 0.02) and (marker_movement.y < 0.02) and (marker_movement.z < 0.02)
         print '-', 'marker movement since last stage', marker_movement
-    vision_valid = fresh and implies(stage == 2, centred and marker_stable)
+    #vision_valid = fresh and implies(stage == 2, centred and marker_stable)
+    vision_valid = fresh and implies(stage == 2, centred and yaw_stable)
+    #vision_valid = fresh and implies(stage == 2, marker_stable)
+    #vision_valid = fresh
     last_seen_sighting = last_seen
+    last_seen_yaw = avgyaw
     # if still have vision, proceed, otherwise back up
     if vision_valid:
         stage = stage + 1
