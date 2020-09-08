@@ -507,37 +507,63 @@ def get_top_or_bot_blockface(marker,master_pose):
   marker1_topic.publish(side1_headpose)
   marker2_topic.publish(side2_headpose)
   print 'rpy: master',euler_from_quat(master_pose.pose.orientation),'side1',euler_from_quat(side1_headpose.pose.orientation),'side2',euler_from_quat(side2_headpose.pose.orientation)
-  other = None
-  top = None
-  commonz = None
-  otherz = None
-  mz = master_pose.pose.position.z
-  s1z = side1_headpose.pose.position.z
-  s2z = side2_headpose.pose.position.z
-  # close === closer than
-  def close(z1, z2):
-    tol = 0.008
-    print 'close?',z1,z2,'delta',abs(z1 - z2), '<',tol,'?', abs(z1 - z2) < tol
-    return (abs(z1 - z2) < tol)
-  print "mz",mz,"s1z",s1z,"s2z",s2z
+
+  #
+  # find distinguished side - attempt 1 - find two sides within tolerance of each other's Z ordinate
+  #
+  #other = None
+  #top = None
+  #commonz = None
+  #otherz = None
+  #mz = master_pose.pose.position.z
+  #s1z = side1_headpose.pose.position.z
+  #s2z = side2_headpose.pose.position.z
+  ## close === closer than
+  #def close(z1, z2):
+  #  tol = 0.008
+  #  print 'close?',z1,z2,'delta',abs(z1 - z2), '<',tol,'?', abs(z1 - z2) < tol
+  #  return (abs(z1 - z2) < tol)
+  #print "mz",mz,"s1z",s1z,"s2z",s2z
+  #if close(mz, s1z):
+  #    print 'other is side2'
+  #    commonz = mz
+  #    other = side2_headpose
+  #    otherz = s2z
+  #if close(mz, s2z):
+  #    print 'other is side1'
+  #    commonz = mz
+  #    other = side1_headpose
+  #    otherz = s1z
+  #if close(s1z, s2z):
+  #    print 'other is master'
+  #    commonz = s1z
+  #    other = master_pose
+  #    otherz = mz
+
+  #
+  # find distinguished side - attempt 2 - find side with most different Z ordinate
+  #
   dm1 = abs(mz - s1z)
   dm2 = abs(mz - s2z)
   d12 = abs(s1z - s2z)
-  if close(mz, s1z):
-      print 'other is side2'
+  #
+  # assume master
+  mindiff = d12
+  commonz = s1z
+  other = master_pose
+  otherz = mz
+  # side 2
+  if dm1 < mindiff:
+      mindiff = dm1
       commonz = mz
       other = side2_headpose
       otherz = s2z
-  if close(mz, s2z):
-      print 'other is side1'
+  # side 1
+  if dm2 < mindiff:
+      mindiff = dm2
       commonz = mz
       other = side1_headpose
       otherz = s1z
-  if close(s1z, s2z):
-      print 'other is master'
-      commonz = s1z
-      other = master_pose
-      otherz = mz
   if otherz == None:
       print 'WARNING: assertion failure'
   if otherz > commonz:
