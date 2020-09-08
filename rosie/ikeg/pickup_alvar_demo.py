@@ -194,7 +194,6 @@ global last_seen_yaw
 last_seen_yaw = 0
 
 while not grab:
-    global last_seen_yaw
     print 'stage',stage
     if stage == 0:
         # No sighting available
