@@ -58,8 +58,14 @@ dz = 0.0;
 print 'init publishers...'
 global posedebug
 posedebug = rospy.Publisher('/red/pose_debug', PoseStamped, queue_size=1)
-global marker_topic
-marker_topic = rospy.Publisher('/red/ikeg/target_marker_pose', PoseStamped, queue_size=1)
+
+global marker0_topic
+marker0_topic = rospy.Publisher('/rosie/marker0', PoseStamped, queue_size=1)
+global marker1_topic
+marker1_topic = rospy.Publisher('/rosie/marker1', PoseStamped, queue_size=1)
+global marker2_topic
+marker2_topic = rospy.Publisher('/rosie/marker2', PoseStamped, queue_size=1)
+
 global target_topic
 target_topic = rospy.Publisher('/red/ikeg/target_gripper_pose', PoseStamped, queue_size=1)
 print 'init publishers done'
@@ -445,7 +451,104 @@ _target_marker_fn = any_marker
 def block_nr(marker):
     return int(marker.id / 10) + 1
 
-def process_alvar(data, markerdata):
+# child frame id is required, not parent frame id, because PoseStamped is anonymous and defined in terms of another PARENT frame
+def new_frame(ps,child_id):
+  m = geometry_msgs.msg.TransformStamped()
+  m.child_frame_id = child_id
+  m.header.stamp = ps.header.stamp
+  m.header.frame_id = ps.header.frame_id
+  m.transform.translation.x=ps.pose.position.x
+  m.transform.translation.y=ps.pose.position.y
+  m.transform.translation.z=ps.pose.position.z
+  m.transform.rotation.x=ps.pose.orientation.x
+  m.transform.rotation.y=ps.pose.orientation.y
+  m.transform.rotation.z=ps.pose.orientation.z
+  m.transform.rotation.w=ps.pose.orientation.w
+  tf_buffer.set_transform(m,node_name)
+
+def quat_from_euler(r,p,y):
+    ori = quaternion_from_euler(r,p,y)
+    return Quaternion(x = ori[0], y=ori[1], z=ori[2], w=ori[3])
+
+def euler_from_quat(ori):
+  # https://answers.ros.org/question/69754/quaternion-transformations-in-python/
+  quat = (ori.x,ori.y,ori.z,ori.w)
+  return tf.transformations.euler_from_quaternion(quat)
+
+def block_master_frame_id(blocknr):
+  return 'block'+str(blocknr)+'_master'
+
+# get Top or Bottom marker to find yaw info for gripper pose
+def get_top_or_bot_blockface(marker,master_pose):
+  print 'get_top_or_bot_blockface'
+  frame = marker.header.frame_id
+  blocknr = block_nr(marker)
+  #master_pose = translate_frame(make_pose_stamped(marker.pose.pose.position,ori=marker.pose.pose.orientation,frame_id=frame), 'head')
+  master_frame_id = block_master_frame_id(blocknr)
+  # master currently to Rosie's right
+  print 'marker frame',frame,'master pose',master_pose,'master_frame_id',master_frame_id
+  master_frame = new_frame(master_pose, master_frame_id)
+  center_pose = translate_frame(translate_pose_in_own_frame(master_pose,'center',0,0,-0.02),'head')
+  ws = 0.02
+  pi = math.pi
+  qt = pi/2
+  #side1_id = 'block'+str(blocknr)+'_side1'
+  # face offset 1 in bundle (currently back)
+  side1 = PoseStamped(header=Header(frame_id=master_frame_id, stamp=rospy.Time.now()),pose=Pose(position=Point(x=ws,y=0,z=-ws),orientation=quat_from_euler(0,qt,0)))
+  side1_headpose = translate_frame(side1,'head')
+  #side2_id = 'block'+str(blocknr)+'_side2'
+  # face offset 4 in bundle (currently 'bot')
+  side2 = PoseStamped(header=Header(frame_id=master_frame_id, stamp=rospy.Time.now()),pose=Pose(position=Point(0,-ws,-ws),orientation=quat_from_euler(0,qt,-qt)))
+  side2_headpose = translate_frame(side2,'head')
+  print 'master pose',master_pose
+  print 'side1 pose',side1_headpose
+  print 'side2 pose',side2_headpose
+  marker0_topic.publish(master_pose)
+  marker1_topic.publish(side1_headpose)
+  marker2_topic.publish(side2_headpose)
+  print 'rpy: master',euler_from_quat(master_pose.pose.orientation),'side1',euler_from_quat(side1_headpose.pose.orientation),'side2',euler_from_quat(side2_headpose.pose.orientation)
+  other = None
+  top = None
+  commonz = None
+  otherz = None
+  mz = master_pose.pose.position.z
+  s1z = side1_headpose.pose.position.z
+  s2z = side2_headpose.pose.position.z
+  # close === closer than
+  def close(z1, z2):
+    tol = 0.008
+    print 'close?',z1,z2,'delta',abs(z1 - z2), '<',tol,'?', abs(z1 - z2) < tol
+    return (abs(z1 - z2) < tol)
+  print "mz",mz,"s1z",s1z,"s2z",s2z
+  dm1 = abs(mz - s1z)
+  dm2 = abs(mz - s2z)
+  d12 = abs(s1z - s2z)
+  if close(mz, s1z):
+      print 'other is side2'
+      commonz = mz
+      other = side2_headpose
+      otherz = s2z
+  if close(mz, s2z):
+      print 'other is side1'
+      commonz = mz
+      other = side1_headpose
+      otherz = s1z
+  if close(s1z, s2z):
+      print 'other is master'
+      commonz = s1z
+      other = master_pose
+      otherz = mz
+  if otherz == None:
+      print 'WARNING: assertion failure'
+  if otherz > commonz:
+      print 'top',otherz,'vs',commonz
+  else:
+      print 'bot',otherz,'vs',commonz
+  topbot = other
+  return (topbot,center_pose)
+
+def process_alvar(data):
+  global avgmarkerpos
   global _target_marker_fn
   if data.markers:
       for marker in data.markers:
@@ -454,11 +557,15 @@ def process_alvar(data, markerdata):
           blocknr = block_nr(marker)
           if _target_marker_fn(marker): #frame != 'head_camera' and blocknr != 5:
               #if blocknr == target_cube:
-              print 'alvar marker:',marker.id,'blocknr',blocknr,'frame',frame
+              #print 'alvar marker:',marker.id,'blocknr',blocknr,'frame',frame
                 #print '- pose',marker
+              # Apparently we don't have enough time to do this before the next callback; offload to client
+              ### (topbot,center_pose) = get_top_or_bot_blockface(marker)
+              ### pose = center_pose
+              ### ori = topbot.pose.orientation
               pose = translate_frame(make_pose_stamped(marker.pose.pose.position,ori=marker.pose.pose.orientation,frame_id=frame), 'head')
-              pos = pose.pose.position
               ori = pose.pose.orientation
+              pos = pose.pose.position
               quat = (ori.x,ori.y,ori.z,ori.w)
               # https://answers.ros.org/question/69754/quaternion-transformations-in-python/
               (roll,pitch,yaw) = tf.transformations.euler_from_quaternion(quat)
@@ -470,26 +577,14 @@ def process_alvar(data, markerdata):
               err=init_key(d,'err',{})
               avgpos = Point(x = pairavg(avgpos.x, pos.x), y = pairavg(avgpos.y, pos.y), z = pairavg(avgpos.z, pos.z))
               avgrpy = (pairavg(avgrpy[0], roll), pairavg(avgrpy[1], pitch), pairavg(avgrpy[2], yaw))
+              d['avg_master_pose']=PoseStamped(header=Header(frame_id='head', stamp=rospy.Time.now()),pose=Pose(position=avgpos,orientation=quat_from_euler(avgrpy[0],avgrpy[1],avgrpy[2])))
               d['avg'] = avgpos
               d['avg_rpy'] = avgrpy
               d['last_seen'] = rospy.get_time()
               d['marker'] = marker
               avgpos = d['avg']
               avgyaw = d['avg_rpy']
-              print '-','marker','avgpos',avgpos.x,avgpos.y,avgpos.z,'avg_rpy',avgrpy
-              #print '- pose,orientation,rpy','(',pos.x,pos.y,pos.z,')','(',ori.x,ori.y,ori.z,ori.w,')','(',roll,pitch,yaw,')'
-              #print '- true pose,orientation,rpy','(',truepos.x,truepos.y,pos.z,')','(',tori.x,tori.y,tori.z,tori.w,')','(',trueroll,truepitch,trueyaw,')'
-              #print '- avgyaw', avgyaw, 'trueyaw', trueyaw
-              #campos = translate_frame(make_pose_stamped(marker.pose.pose.position,frame), frame).pose.position
-              #if blocknr == 1 and frame == 'left_hand_camera':
-                  #print 'block',blocknr,'marker',marker.id,'frame',frame #,'avg pos',avgpos,'block pos',blockpos
-                  #print '- dist from camera',camdist,'error',err[camdist]
-                  #print camdist,',',err[camdist]
-                  #print '- all error',err
-
-def marker_callback(data):
-  global avgmarkerpos
-  process_alvar(data,avgmarkerpos)
+              #print '-','marker','avgpos',avgpos.x,avgpos.y,avgpos.z,'avg_rpy',avgrpy
 
 global gripper
 
@@ -534,7 +629,12 @@ def getavgpos(target_marker_id):
     print '- alvar','avg pos',avgpos,'avg yaw',avgyaw
     return (avgpos,avgyaw)
 
-def init(nodename='vxlab_ik_alvar_demo', target_marker_fn=any_marker):
+global node_name
+
+def init(nodename='locallib', target_marker_fn=any_marker):
+    global node_name
+    node_name = nodename
+
     global _target_marker_fn
     _target_marker_fn = target_marker_fn
     print 'init node...'
@@ -547,4 +647,4 @@ def init(nodename='vxlab_ik_alvar_demo', target_marker_fn=any_marker):
     tf_listener = tf2_ros.TransformListener(tf_buffer)
     print 'init TF done'
 
-    rospy.Subscriber('/ar_pose_marker', AlvarMarkers, marker_callback, queue_size=1)
+    rospy.Subscriber('/ar_pose_marker', AlvarMarkers, process_alvar, queue_size=1)
