@@ -507,6 +507,9 @@ def get_top_or_bot_blockface(marker,master_pose):
   marker1_topic.publish(side1_headpose)
   marker2_topic.publish(side2_headpose)
   print 'rpy: master',euler_from_quat(master_pose.pose.orientation),'side1',euler_from_quat(side1_headpose.pose.orientation),'side2',euler_from_quat(side2_headpose.pose.orientation)
+  mz = master_pose.pose.position.z
+  s1z = side1_headpose.pose.position.z
+  s2z = side2_headpose.pose.position.z
 
   #
   # find distinguished side - attempt 1 - find two sides within tolerance of each other's Z ordinate
@@ -515,9 +518,6 @@ def get_top_or_bot_blockface(marker,master_pose):
   #top = None
   #commonz = None
   #otherz = None
-  #mz = master_pose.pose.position.z
-  #s1z = side1_headpose.pose.position.z
-  #s2z = side2_headpose.pose.position.z
   ## close === closer than
   #def close(z1, z2):
   #  tol = 0.008
