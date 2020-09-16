@@ -13,6 +13,7 @@ services:
           target: /root/rosie
         entrypoint: bash -c "source ~/.bashrc ; ~/rosie/run-tests"
         environment:
+        - ROS_MASTER_URI=http://gazebo:11311
         - TESTS=${SIMTESTS}
         - BAXTER_ONLY=${BAXTER_ONLY}
         - GIT_COMMIT=${GIT_COMMIT}
@@ -21,4 +22,3 @@ networks:
     vxlab:
       external: true
       name: vxlab
-
