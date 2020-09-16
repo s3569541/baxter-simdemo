@@ -1,5 +1,12 @@
 #!/bin/bash
 
+SPAWN=true
+case $1 in
+  "-u")
+    SPAWN=false
+    ;;
+esac
+
 # Gazebo / Baxter drivers do not respond well to malformed deletes ... ?
 # Appears to cause failure with error: "[FATAL] [1597221904.084218604]: The internal stop and start request lists are not empty at the beginning of the swithController() call. This should not happen."
 
@@ -11,19 +18,19 @@ function delete_model() {
 
 echo Deleting models
 
-#delete_model marker5
 delete_model marker4
-delete_model marker3
-delete_model marker2
-delete_model marker1
 delete_model table1
 
-echo Spawning models
+echo "Spawning models?" ${SPAWN}
 
-# table
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markertable/model.sdf -model table1 -x 1.2 -y 0.0 -z 0.0
-# large navigation beacon
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4/model.sdf -model marker4 -x 1.5 -y -0.0 -z 0.9
+if [ "${SPAWN}" = true ]
+then
+  echo Spawning models
+  # table
+  rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markertable/model.sdf -model table1 -x 1.2 -y 0.0 -z 0.0
+  # large navigation beacon
+  rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4/model.sdf -model marker4 -x 1.5 -y -0.0 -z 0.9
+fi
 
 # small blocks ("targets")
 #rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.0 -z 0.8
