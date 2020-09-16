@@ -205,16 +205,26 @@ WORKDIR /root/rosie
 #CMD ["/root/rosie/simstart"]
 
 ########################################################
+# Update
+########################################################
+
+# Change to virtual joint?
+# https://github.com/ros-industrial/universal_robot/pull/284#issuecomment-613850762
+RUN apt update && apt -y dist-upgrade
+
+########################################################
 # NVidia Driver - To Enable X output over Hardware-accelerated OpenGL
 ########################################################
 
+#ENV NV_VER=390.138 - desktop task switching slows down??
+ENV NV_VER=450.66
 WORKDIR /root
 RUN apt update && apt install kmod
 # Use the NVidia driver that corresponds to the version on your host
 #RUN wget http://us.download.nvidia.com/XFree86/Linux-x86_64/450.57/NVIDIA-Linux-x86_64-450.57.run
-RUN wget http://us.download.nvidia.com/XFree86/Linux-x86_64/450.66/NVIDIA-Linux-x86_64-450.66.run
-RUN chmod +x NVIDIA-Linux-x86_64-450.66.run
-RUN bash -c 'echo $PATH ; /root/NVIDIA-Linux-x86_64-450.66.run -a -N --ui=none --no-kernel-module'
+RUN wget http://us.download.nvidia.com/XFree86/Linux-x86_64/${NV_VER}/NVIDIA-Linux-x86_64-${NV_VER}.run
+RUN chmod +x NVIDIA-Linux-x86_64-${NV_VER}.run
+RUN bash -c 'echo $PATH ; /root/NVIDIA-Linux-x86_64-${NV_VER}.run -a -N --ui=none --no-kernel-module'
 
 ########################################################
 # Baxter - MoveIt
@@ -224,11 +234,6 @@ WORKDIR /root/ws_baxter/src
 RUN git clone https://github.com/ros-planning/moveit_robots.git
 RUN catkin build --jobs 16 --limit-status-rate 0.001 --no-notify
 RUN apt -y install ros-melodic-moveit-simple-controller-manager ros-melodic-moveit-planners ros-melodic-moveit-visual-tools ros-melodic-moveit-ros-visualization ros-melodic-moveit-commander
-
-# Change to virtual joint?
-# https://github.com/ros-industrial/universal_robot/pull/284#issuecomment-613850762
-
-RUN apt update && apt -y dist-upgrade
 
 WORKDIR /root/rosie
 ENTRYPOINT ["/root/rosie/rosie-sim-guest-runner"]
