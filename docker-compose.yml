@@ -1,4 +1,15 @@
 version: "3.5"
+x-alvar-defaults:
+    &alvar-defaults
+    build:
+      context: alvar_marker_recognition
+      dockerfile: Dockerfile
+    networks:
+      vxlab:
+    volumes:
+    - type: bind
+      source: ./rosie
+      target: /root/rosie
 services:
     novnc:
         container_name: novnc
@@ -7,14 +18,8 @@ services:
           vxlab:
         ports:
           - "8080:8080"
-    display2:
-        container_name: display2
-        image: theasp/novnc
-        networks:
-          vxlab:
-        ports:
-          - "8081:8080"
     gazebo:
+        depends_on: [novnc]
         container_name: gazebo
         build:
           context: .
@@ -37,12 +42,12 @@ services:
           target: /dev/dri
         privileged: true
         environment:
-          #DISPLAY: "novnc:0"
           - DISPLAY=${XDISPLAY}
           - BAXTER_ONLY=${BAXTER_ONLY}
         entrypoint: ["/root/rosie/gazebo-guest-runner"]
     # separate misc command and control functions from simulation itself for testing etc.
     main:
+        depends_on: [gazebo]
         container_name: main
         build:
           context: .
@@ -64,11 +69,11 @@ services:
           target: /dev/dri
         privileged: true
         environment:
-          #DISPLAY: "novnc:0"
           - DISPLAY=${XDISPLAY}
           - BAXTER_ONLY=${BAXTER_ONLY}
         entrypoint: ["/root/rosie/rosie-main-guest-runner"]
     vxlab-rosie-nav:
+        depends_on: [gazebo]
         container_name: vxlab-rosie-nav
         build:
           context: .
@@ -80,47 +85,29 @@ services:
           source: ./rosie
           target: /root/rosie
         environment:
-          - DISPLAY=${XDISPLAY}
+          DISPLAY: ${XDISPLAY}
+          ROS_MASTER_URI: http://gazebo:11311
     alvar-head:
+        << : *alvar-defaults
         container_name: alvar-head
-        build:
-          context: alvar_marker_recognition
-          dockerfile: Dockerfile
-        networks:
-          vxlab:
-        volumes:
-        - type: bind
-          source: ./rosie
-          target: /root/rosie
         environment:
           LIMB: head
-    alvar-right:
-        container_name: alvar-right
-        build:
-          context: alvar_marker_recognition
-          dockerfile: Dockerfile
-        networks:
-          vxlab:
-        volumes:
-        - type: bind
-          source: ./rosie
-          target: /root/rosie
-        environment:
-          LIMB: right_hand
+          ROS_MASTER_URI: "http://gazebo:11311"
+          ROS_MASTER: "gazebo"
     alvar-left:
+        << : *alvar-defaults
         container_name: alvar-left
-        build:
-          context: alvar_marker_recognition
-          dockerfile: Dockerfile
-        networks:
-          vxlab:
-        volumes:
-        - type: bind
-          source: ./rosie
-          target: /root/rosie
         environment:
           LIMB: left_hand
-
+          ROS_MASTER_URI: "http://gazebo:11311"
+          ROS_MASTER: "gazebo"
+    alvar-right:
+        << : *alvar-defaults
+        container_name: alvar-right
+        environment:
+          LIMB: right_hand
+          ROS_MASTER_URI: "http://gazebo:11311"
+          ROS_MASTER: "gazebo"
     #
     #
     #
@@ -137,7 +124,7 @@ services:
     #      source: ./blue-sim/blue
     #      target: /root/mir100
     #    environment:
-    #      DISPLAY: novnc:0
+    #      DISPLAY=${XDISPLAY}
     #    entrypoint: ["sh", "-c", "sleep 21000"]
 
 
