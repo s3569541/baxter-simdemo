@@ -14,9 +14,10 @@ done
 
 cd ~/rosie/ikeg
 
+~/rosie/spawn -u
+~/rosie/untuck
 ~/rosie/spawn
 delete_model marker1
-./block_pickup_test_reset.py
 rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.5 -y 0.03 -z 0.8 -Y 0.7 -P -0.0 -R -0.0
 
 { sleep 500 ; echo "$0 Timeout"; exit 1; } &

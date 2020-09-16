@@ -14,9 +14,9 @@ done
 
 cd ~/rosie/ikeg
 
+~/rosie/spawn -u
 # move Baxter arms out of the way
 ~/rosie/untuck
-#./block_pickup_test_reset.py
 ~/rosie/spawn
 
 delete_model marker1
@@ -27,7 +27,7 @@ delete_model marker1
 
 ./pickup_alvar_demo.py
 result=$?
-echo "finished with result $result"
+echo "$0: test exited with $result"
 
 delete_model marker1
 exit $result
