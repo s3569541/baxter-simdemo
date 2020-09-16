@@ -6,10 +6,10 @@
 ./test-init
 
 export BAXTER_ONLY=true
-./test "vision_pickup_refactored vision_pickup_random vision_pickup pickup"
+./test "vision_pickup_refactored pickup"
 
 export BAXTER_ONLY=false
 ./test "navigation"
 
 export BAXTER_ONLY=false
-./test "vision_pickup_refactored vision_pickup_random vision_pickup pickup"
+./test "vision_pickup_refactored pickup"
