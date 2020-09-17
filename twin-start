@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docker-compose up -p gazebo1 -d
+docker-compose up -p gazebo2 -d

@@ -1,0 +1,147 @@
+version: "3.5"
+x-alvar:
+    &alvar
+    build:
+      context: alvar_marker_recognition
+      dockerfile: Dockerfile
+    networks:
+      vxlab:
+    volumes:
+    - type: bind
+      source: ./rosie
+      target: /root/rosie
+
+services:
+    novnc:
+        container_name: novnc
+        image: theasp/novnc
+        networks:
+          vxlab:
+        ports:
+          - "8080:8080"
+    gazebo:
+        &gazebo
+        depends_on: [novnc]
+        container_name: gazebo
+        build:
+          context: .
+          dockerfile: Dockerfile.blue
+          #network: host
+        networks:
+          vxlab:
+        volumes:
+        - type: bind
+          source: ./rosie
+          target: /root/rosie
+        - type: bind
+          source: /dev/shm
+          target: /dev/shm
+        - type: bind
+          source: /tmp/.X11-unix
+          target: /tmp/.X11-unix
+        - type: bind
+          source: /dev/dri
+          target: /dev/dri
+        privileged: true
+        environment:
+          #- DISPLAY=${XDISPLAY}
+          - BAXTER_ONLY=${BAXTER_ONLY}
+          - DISPLAY=novnc:0
+          - ROS_MASTER_URI=http://gazebo:11311
+        entrypoint: ["/root/rosie/gazebo-guest-runner"]
+    gazebo2:
+        << : *gazebo
+        container_name: gazebo2
+        environment:
+          - BAXTER_ONLY=${BAXTER_ONLY}
+          - DISPLAY=novnc:0
+          - ROS_MASTER_URI=http://gazebo2:11311
+    # separate misc command and control functions from simulation itself for testing etc.
+    main:
+        depends_on: [gazebo]
+        container_name: main
+        build:
+          context: .
+          dockerfile: Dockerfile.blue
+        networks:
+          vxlab:
+        volumes:
+        - type: bind
+          source: ./rosie
+          target: /root/rosie
+        - type: bind
+          source: /dev/shm
+          target: /dev/shm
+        - type: bind
+          source: /tmp/.X11-unix
+          target: /tmp/.X11-unix
+        - type: bind
+          source: /dev/dri
+          target: /dev/dri
+        privileged: true
+        environment:
+          #DISPLAY: "novnc:0"
+          - DISPLAY=${XDISPLAY}
+          - BAXTER_ONLY=${BAXTER_ONLY}
+          - ROS_MASTER_URI="http://gazebo:11311"
+        entrypoint: ["/root/rosie/rosie-main-guest-runner"]
+    vxlab-rosie-nav:
+        depends_on: [gazebo]
+        container_name: vxlab-rosie-nav
+        build:
+          context: .
+          dockerfile: Dockerfile.nav
+        networks:
+          vxlab:
+        volumes:
+        - type: bind
+          source: ./rosie
+          target: /root/rosie
+        environment:
+          - DISPLAY=${XDISPLAY}
+    alvar-left:
+        << : *alvar
+        container_name: alvar-left
+        environment:
+          LIMB: left_hand
+          ROS_MASTER_URI: "http://gazebo:11311"
+          ROS_MASTER: "gazebo"
+    alvar-right:
+        << : *alvar
+        container_name: alvar-right
+        environment:
+          LIMB: right_hand
+          ROS_MASTER_URI: "http://gazebo:11311"
+          ROS_MASTER: "gazebo"
+    #
+    #
+    #
+    #vxlab-blue:
+    #    container_name: vxlab-blue
+    #    build:
+    #      context: blue-sim
+    #      dockerfile: Dockerfile-melodic
+    #      #network: host
+    #    networks:
+    #      vxlab:
+    #    volumes:
+    #    - type: bind
+    #      source: ./blue-sim/blue
+    #      target: /root/mir100
+    #    environment:
+    #      DISPLAY: novnc:0
+    #    entrypoint: ["sh", "-c", "sleep 21000"]
+
+
+networks:
+    vxlab:
+      external: true
+      name: vxlab
+
+#networks:
+    #vxlab:
+        #name: vxlab
+        #ipam:
+            #config:
+              #- subnet: "10.42.170.0/24"
+                #- gateway: "10.42.170.254"

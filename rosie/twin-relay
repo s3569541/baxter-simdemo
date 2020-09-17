@@ -1,0 +1,2 @@
+# run on gazebo2
+./foreign_relay.py sub /rosie/blockstack http://gazebo:11311
