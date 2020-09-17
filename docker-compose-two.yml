@@ -105,14 +105,24 @@ services:
         environment:
           LIMB: left_hand
           ROS_MASTER_URI: "http://gazebo:11311"
-          ROS_MASTER: "gazebo"
     alvar-right:
         << : *alvar
         container_name: alvar-right
         environment:
           LIMB: right_hand
           ROS_MASTER_URI: "http://gazebo:11311"
-          ROS_MASTER: "gazebo"
+    alvar-left2:
+        << : *alvar
+        container_name: alvar-left2
+        environment:
+          LIMB: left_hand
+          ROS_MASTER_URI: "http://gazebo2:11311"
+    alvar-right2:
+        << : *alvar
+        container_name: alvar-right2
+        environment:
+          LIMB: right_hand
+          ROS_MASTER_URI: "http://gazebo2:11311"
     #
     #
     #
