@@ -27,9 +27,9 @@ if [ "${SPAWN}" = true ]
 then
   echo Spawning models
   # table
-  rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markertable/model.sdf -model table1 -x 1.2 -y 0.0 -z 0.0
+  #rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markertable/model.sdf -model table1 -x 1.2 -y 0.0 -z 0.0
   # large navigation beacon
-  rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4/model.sdf -model marker4 -x 1.5 -y -0.0 -z 0.9
+  #rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4/model.sdf -model marker4 -x 1.5 -y -0.0 -z 0.9
 fi
 
 # small blocks ("targets")
