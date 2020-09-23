@@ -4,8 +4,8 @@
     <pose>0 0 0 0 0 0</pose>
     <link name="mb2_box">
       <inertial>
-        <mass>0.01</mass>
-        <inertia> <!-- -->
+        <mass>0.001</mass>
+        <inertia> 
           <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
           <!-- for a cube: ixx,iyy,izz = 0.083 * mass * (2*side*side) -->
           <!-- 2.66666666667e-06 for a cube of mass 0.01, side 0.04 -->
@@ -21,15 +21,31 @@
       <collision name="collision">
         <geometry>
           <mesh>
-	    <uri>model://markerblock_1/meshes/alvar2.dae</uri>
+	          <uri>model://markerblock_1/meshes/alvar2.dae</uri>
             <scale>0.02 0.02 0.02</scale>
           </mesh>
         </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <kp>99999.0</kp>
+              <kd>99999.0</kd>
+              <max_vel>0.0</max_vel>
+              <min_depth>0.00</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>99999.0</mu>
+              <mu2>99999.0</mu2>
+            </ode>
+          </friction>
+        </surface>
       </collision>
       <visual name="visual">
         <geometry>
           <mesh>
-	    <uri>model://markerblock_1/meshes/alvar2.dae</uri>
+	          <uri>model://markerblock_1/meshes/alvar2.dae</uri>
             <scale>0.02 0.02 0.02</scale>
           </mesh>
         </geometry>
