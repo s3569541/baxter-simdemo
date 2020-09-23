@@ -75,7 +75,7 @@ def init():
     # initialize moveit_commander and rospy.
     joint_state_topic = ['joint_states:=/robot/joint_states']
     moveit_commander.roscpp_initialize(joint_state_topic)
-    rospy.init_node('moveit_baxter_example', anonymous=True)
+    # rospy.init_node('moveit_baxter_example', anonymous=True)
     display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
                                                moveit_msgs.msg.DisplayTrajectory,
                                                queue_size=20)
@@ -93,9 +93,6 @@ def init():
     lgripper = locallib.init_gripper(mylimb)
     lgripper.calibrate()
     lgripper.open()
-    # rgripper = locallib.init_gripper("right")
-    # rgripper.calibrate()
-    # rgripper.open()
     rospy.sleep(1)
     print 'gripper open'
 
@@ -107,8 +104,13 @@ def init():
 
 def locateBlock(marker):
     
-    print "Locating marker: ", marker
+    print "\nLocating marker: ", marker
+    while(locallib.getavgpos('right_hand_camera', marker)==False):
+        rospy.sleep(2)
+
     avgpos,avgyaw = locallib.getavgpos('right_hand_camera', marker)
+
+    print "New Pos: ", avgpos, "\nYaw: ",avgyaw
     # mylimb =  'right'
     # newPoseBase = locallib.translate_frame(locallib.make_pose_stamped_yaw(avgpos, 'head', avgyaw), 'base')
     # pos = newPoseBase.pose.position
@@ -137,37 +139,41 @@ def pick(target_marker_id):
     global lgripper
     global mylimb
 
-    avgpos, avgyaw = locallib.getavgposTop('left_hand_camera', target_marker_id)
+    while(not locallib.getavgpos('left_hand_camera', target_marker_id)):
+        rospy.sleep(1)
+
+    avgpos, avgyaw = locallib.getavgpos('left_hand_camera', target_marker_id)
 
     print '******* move to proper sighting pos ********'
     newPoseBase = locallib.translate_frame(locallib.make_pose_stamped_yaw(avgpos, 'head', avgyaw), 'base')
     pos = newPoseBase.pose.position
     ori = quaternion_from_euler(3.14, 0, avgyaw)
 
-    move_arm(mylimb, pos.x, pos.y, pos.z+0.1)#, ori[0], ori[1], ori[2], ori[3])
+    move_arm(mylimb, pos.x, pos.y, pos.z+0.12)#, ori[0], ori[1], ori[2], ori[3])
 
     # terminate()
 
     rospy.sleep(2)
-    avgpos,avgyaw = locallib.getavgposTop('left_hand_camera', target_marker_id)
+    avgpos,avgyaw = locallib.getavgpos('left_hand_camera', target_marker_id)
 
     newPoseBase = locallib.translate_frame(locallib.make_pose_stamped_yaw(avgpos, 'head', avgyaw), 'base')
     pos = newPoseBase.pose.position
     ori = quaternion_from_euler(3.14, 0, avgyaw)
 
-    move_arm(mylimb, pos.x, pos.y, pos.z+0.05)#, ori[0], ori[1], ori[2], ori[3])
+    move_arm(mylimb, pos.x, pos.y, pos.z+0.07)#, ori[0], ori[1], ori[2], ori[3])
+    # drop_arm(mylimb, pos.x, pos.y, pos.z+0.05)
 
     # terminate()
 
     rospy.sleep(2)
-    avgpos,avgyaw = locallib.getavgposTop('left_hand_camera', target_marker_id)
+    avgpos,avgyaw = locallib.getavgpos('left_hand_camera', target_marker_id)
 
     print 'move to grab'
     newPoseBase = locallib.translate_frame(locallib.make_pose_stamped_yaw(avgpos, 'head', avgyaw), 'base')
     pos = newPoseBase.pose.position
     ori = quaternion_from_euler(3.14, 0, avgyaw)
 
-    drop_arm(mylimb, pos.x, pos.y, pos.z-0.006)
+    drop_arm(mylimb, pos.x, pos.y, pos.z+0.02)
 
     ### Close grippers
     print 'close (grab)'
