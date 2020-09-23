@@ -1,2 +1,2 @@
 cp baxter_base.srdf.xacro /root/ws_baxter/src/moveit_robots/baxter/baxter_moveit_config/config/baxter_base.srdf.xacro
-roslaunch ./moveit_init.launch &
+roslaunch ./moveit_init.launch

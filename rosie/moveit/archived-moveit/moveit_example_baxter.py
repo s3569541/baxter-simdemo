@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 
+# http://docs.ros.org/melodic/api/moveit_tutorials/html/index.html
 # https://github.com/ros-planning/moveit_tutorials/blob/kinetic-devel/doc/move_group_python_interface/scripts/move_group_python_interface_tutorial.py
 # https://github.com/ravijo/baxter_moveit_tutorial/blob/master/scripts/example.py
+# http://docs.ros.org/melodic/api/moveit_commander/html/classmoveit__commander_1_1move__group_1_1MoveGroupCommander.html
+# http://docs.ros.org/melodic/api/moveit_commander/html/move__group_8py_source.html
+#
+# (For pick and place) C++
+# http://docs.ros.org/melodic/api/moveit_tutorials/html/doc/pick_place/pick_place_tutorial.html
 
 # Steps to run this code
 # 1) roslaunch baxter_moveit_tutorial moveit_init.launch
@@ -41,8 +47,6 @@ def moveit_baxter_example():
     # an interface to the robot as a whole.
     robot = moveit_commander.RobotCommander()
     group = moveit_commander.MoveGroupCommander("both_arms")
-    group.set_max_velocity_scaling_factor(0.1)
-
     ## Instantiate a `PlanningSceneInterface`_ object.  This object is an interface
     ## to the world surrounding the robot:
     ## Needs to be constructed after robot and group, or "can't get joint states"
@@ -65,27 +69,22 @@ def moveit_baxter_example():
     wait_for_state_update(obj_name='box',box_is_known=True)
 
     # Planning to a Pose goal
-    left_current_pose = group.get_current_pose(end_effector_link='left_gripper').pose
+    left_current = group.get_current_pose(end_effector_link='left_gripper')
+    left_current_pose = left_current.pose
     right_current_pose = group.get_current_pose(end_effector_link='right_gripper').pose
+    print 'planning frame:',group.get_planning_frame()
+    print 'pose reference frame:',group.get_pose_reference_frame()
+    print 'left_current_pose',left_current
 
     left_target_pose = left_current_pose
+    left_target_pose.position.x = left_current_pose.position.x - 0.1  # 0.1m = 10 cm
+    left_target_pose.position.y = left_current_pose.position.y + 0.0  # 0.1m = 10 cm
+    left_target_pose.position.z = left_current_pose.position.z + 0.0
+
     right_target_pose = right_current_pose
-
-    left_target_pose.position.x = 0.5
-    left_target_pose.position.y = 0.1
-    left_target_pose.position.z = -1.15
-
-    right_target_pose.position.x = 0.5
-    right_target_pose.position.y = -0.1
-    right_target_pose.position.z = -1.15
-
-    # left_target_pose.position.x = 0.7
-    # left_target_pose.position.y = 0.4
-    # left_target_pose.position.z = 0.2
-
-    # right_target_pose.position.x = 0.7
-    # right_target_pose.position.y = -0.4
-    # right_target_pose.position.z = 0.2
+    right_target_pose.position.x = right_current_pose.position.x - 0.1
+    right_target_pose.position.y = right_current_pose.position.y + 0.0
+    right_target_pose.position.z = right_current_pose.position.z + 0.0
 
     group.set_pose_target(left_target_pose, end_effector_link='left_gripper')
     group.set_pose_target(right_target_pose, end_effector_link='right_gripper')
