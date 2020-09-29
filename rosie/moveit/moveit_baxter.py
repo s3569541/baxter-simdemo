@@ -63,33 +63,29 @@ global rgripper
 global display_trajectory_publisher
 
 def init():
+    global robot
     global lgroup
     global rgroup
-    global robot
     global mylimb
     global display_trajectory_publisher
 
     mylimb = 'left'
     # Instantiate a RobotCommander object.  This object is
     # an interface to the robot as a whole.
-    
+
     # initialize moveit_commander and rospy.
     joint_state_topic = ['joint_states:=/robot/joint_states']
     moveit_commander.roscpp_initialize(joint_state_topic)
     # rospy.init_node('moveit_baxter_example', anonymous=True)
     display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
-                                               moveit_msgs.msg.DisplayTrajectory,
-                                               queue_size=20)
+                                            moveit_msgs.msg.DisplayTrajectory,
+                                            queue_size=20)
 
     robot = moveit_commander.RobotCommander()
-    success = False
-    while(not success):
-        try:
-            lgroup = moveit_commander.MoveGroupCommander("left_arm")
-            rgroup = moveit_commander.MoveGroupCommander("right_arm")
-            success = True
-        except:
-            print "time out error"
+    lgroup = moveit_commander.MoveGroupCommander("left_arm")
+    rgroup = moveit_commander.MoveGroupCommander("right_arm")
+    success = True
+
     # this is necessaary to reduce number pf joint failures to increase precision of movements
     lgroup.set_max_acceleration_scaling_factor(0.3)
     rgroup.set_max_acceleration_scaling_factor(0.3)
@@ -100,10 +96,17 @@ def init():
 
     print("~~~~~~ init and calibration complete ~~~~~~~~~~")
 
-def locateBlock(marker):
+def locateBlock(camera, marker):
     print "\nLocating block: ", marker
-    avgpos,avgyaw = locallib.getavgpos(marker)
-
+    rospy.sleep(2)
+    if marker in locallib.avgmarkerpos:
+        d5 = locallib.avgmarkerpos[marker]
+    if camera in d5:
+        d = d5[camera]
+    if 'avg' in d:
+        avgpos = d['avg']
+        avgyaw = d['avg_rpy'][2]
+    print '- alvar','avg pos\n',avgpos,'\navg yaw',avgyaw
     return avgpos,avgyaw
 
 def pick(target_marker_id):
@@ -114,7 +117,7 @@ def pick(target_marker_id):
     global lgripper
     global mylimb
 
-    avgpos, avgyaw = locallib.getavgpos(target_marker_id)
+    avgpos, avgyaw = locateBlock('left_hand_camera', target_marker_id)
 
     print '******* move to proper sighting pos ********'
     newPoseBase = locallib.translate_frame(locallib.make_pose_stamped_yaw(avgpos, 'head', avgyaw), 'base')
@@ -123,9 +126,8 @@ def pick(target_marker_id):
 
     move_arm(mylimb, pos.x, pos.y, pos.z+0.1)#, ori[0], ori[1], ori[2], ori[3])
 
-    print "Updating block", target_marker_id, "location..."
     rospy.sleep(0.5)
-    avgpos,avgyaw = locallib.getavgpos(target_marker_id)
+    avgpos,avgyaw = locateBlock('left_hand_camera', target_marker_id)
 
     newPoseBase = locallib.translate_frame(locallib.make_pose_stamped_yaw(avgpos, 'head', avgyaw), 'base')
     pos = newPoseBase.pose.position
@@ -134,9 +136,8 @@ def pick(target_marker_id):
     # move_arm(mylimb, pos.x, pos.y, pos.z+0.07)#, ori[0], ori[1], ori[2], ori[3])
     drop_arm(mylimb, pos.x, pos.y, pos.z+0.07)
 
-    print "Updating block", target_marker_id, "location..."
     rospy.sleep(0.5)
-    avgpos,avgyaw = locallib.getavgpos(target_marker_id)
+    avgpos,avgyaw = locateBlock('left_hand_camera', target_marker_id)
 
     print 'move to grab'
     newPoseBase = locallib.translate_frame(locallib.make_pose_stamped_yaw(avgpos, 'head', avgyaw), 'base')

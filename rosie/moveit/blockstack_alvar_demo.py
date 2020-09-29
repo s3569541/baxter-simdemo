@@ -35,7 +35,7 @@ rightStackMarkers = {}
 # Get locations of all blocks in right arm stack
 for marker in markers:
   if marker in availableMarkers:
-    avgpos,avgyaw = moveit_baxter.locateBlock(marker)
+    avgpos,avgyaw = moveit_baxter.locateBlock('right_hand_camera', marker)
     if avgpos != 0:
       rightStackMarkers[marker] = {"AvgPos": avgpos, "avgyaw" : avgyaw}
 
