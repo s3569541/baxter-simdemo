@@ -107,10 +107,6 @@ def init():
 
     print("~~~~~~ init and calibration complete ~~~~~~~~~~")
 
-# def localib.getMarkerPosition(camera, marker):
-#     localib.getMarkerPosition
-#     return avgpos,avgyaw
-
 def pick(target_marker_id):
 
     move_arm('left', 0.65, 0.7, -0.1)
