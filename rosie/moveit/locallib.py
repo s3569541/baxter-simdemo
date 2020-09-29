@@ -658,6 +658,7 @@ def getavgpos(camera, target_marker_id):
             leftBlockPos[target_marker_id] = {"AvgPos": avgpos, "avgyaw" : avgyaw}
         else:
             rightBlockPos[target_marker_id] = {"AvgPos": avgpos, "avgyaw" : avgyaw}
+        print "\n", camera, "\nmarker", target_marker_id, "Position\n", avgpos
         return avgpos,avgyaw
     return False
 
