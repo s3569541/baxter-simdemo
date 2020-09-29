@@ -595,7 +595,7 @@ def init_gripper(mylimb):
     gripper.open()
     print 'gripper open'
     return gripper
-    
+
 global avgpos
 global avgyaw
 avgpos = None
@@ -607,7 +607,7 @@ def getavgpos(target_marker_id):
     d5 = {}
     d = {}
     print 'awaiting Alvar avg'
-    rospy.sleep(0.5)
+    rospy.sleep(2)
     if target_marker_id in avgmarkerpos:
         d5 = avgmarkerpos[target_marker_id]
     if 'head_camera' in d5:
