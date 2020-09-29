@@ -39,10 +39,6 @@ for marker in markers:
     if avgpos != 0:
       rightStackMarkers[marker] = {"AvgPos": avgpos, "avgyaw" : avgyaw}
 
-for marker in rightStackMarkers:
-  print marker
-  print rightStackMarkers[marker], "\n"
-
 # sort the right stack block ids by z axis value so the lowest blocks get stacked first
 stackOrder = []
 for marker in rightStackMarkers:
