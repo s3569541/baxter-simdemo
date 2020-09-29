@@ -82,9 +82,14 @@ def init():
                                                queue_size=20)
 
     robot = moveit_commander.RobotCommander()
-    lgroup = moveit_commander.MoveGroupCommander("left_arm")
-    rgroup = moveit_commander.MoveGroupCommander("right_arm")
-
+    success = False
+    while(not success):
+        try:
+            lgroup = moveit_commander.MoveGroupCommander("left_arm")
+            rgroup = moveit_commander.MoveGroupCommander("right_arm")
+            success = True
+        except:
+            print "time out error"
     # this is necessaary to reduce number pf joint failures to increase precision of movements
     lgroup.set_max_acceleration_scaling_factor(0.3)
     rgroup.set_max_acceleration_scaling_factor(0.3)

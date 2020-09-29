@@ -16,13 +16,6 @@ import sys
 import locallib
 import moveit_baxter
 
-global avgpos
-global avgyaw
-global last_seen
-global pos_in_frame
-global topbot
-global center_pose
-
 locallib.init(nodename='pickup_alvar_demo')
 moveit_baxter.init()
 
