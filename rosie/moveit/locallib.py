@@ -465,13 +465,13 @@ def block_master_frame_id(blocknr):
 
 # get Top or Bottom marker to find yaw info for gripper pose
 def get_top_or_bot_blockface(marker,master_pose):
-#   print 'get_top_or_bot_blockface'
+    #   print 'get_top_or_bot_blockface'
   frame = marker.header.frame_id
   blocknr = block_nr(marker)
   #master_pose = translate_frame(make_pose_stamped(marker.pose.pose.position,ori=marker.pose.pose.orientation,frame_id=frame), 'head')
   master_frame_id = block_master_frame_id(blocknr)
   # master currently to Rosie's right
-#   print 'marker frame',frame,'master pose',master_pose,'master_frame_id',master_frame_id
+    #   print 'marker frame',frame,'master pose',master_pose,'master_frame_id',master_frame_id
   master_frame = new_frame(master_pose, master_frame_id)
   center_pose = translate_frame(translate_pose_in_own_frame(master_pose,'center',0,0,-0.02),'head')
   ws = 0.02
@@ -485,13 +485,13 @@ def get_top_or_bot_blockface(marker,master_pose):
   # face offset 4 in bundle (currently 'bot')
   side2 = PoseStamped(header=Header(frame_id=master_frame_id, stamp=rospy.Time.now()),pose=Pose(position=Point(0,-ws,-ws),orientation=quat_from_euler(0,qt,-qt)))
   side2_headpose = translate_frame(side2,'head')
-#   print 'master pose',master_pose
-#   print 'side1 pose',side1_headpose
-#   print 'side2 pose',side2_headpose
+  # print 'master pose',master_pose
+  #   print 'side1 pose',side1_headpose
+  #   print 'side2 pose',side2_headpose
   marker0_topic.publish(master_pose)
   marker1_topic.publish(side1_headpose)
   marker2_topic.publish(side2_headpose)
-#   print 'rpy: master',euler_from_quat(master_pose.pose.orientation),'side1',euler_from_quat(side1_headpose.pose.orientation),'side2',euler_from_quat(side2_headpose.pose.orientation)
+  #   print 'rpy: master',euler_from_quat(master_pose.pose.orientation),'side1',euler_from_quat(side1_headpose.pose.orientation),'side2',euler_from_quat(side2_headpose.pose.orientation)
   mz = master_pose.pose.position.z
   s1z = side1_headpose.pose.position.z
   s2z = side2_headpose.pose.position.z
@@ -549,12 +549,12 @@ def get_top_or_bot_blockface(marker,master_pose):
       commonz = mz
       other = side1_headpose
       otherz = s1z
-#   if otherz == None:
-#       print 'WARNING: assertion failure'
-#   if otherz > commonz:
-#       print 'top',otherz,'vs',commonz
-#   else:
-#       print 'bot',otherz,'vs',commonz
+  #   if otherz == None:
+  #       print 'WARNING: assertion failure'
+  #   if otherz > commonz:
+  #       print 'top',otherz,'vs',commonz
+  #   else:
+  #       print 'bot',otherz,'vs',commonz
   topbot = other
   return (topbot,center_pose)
 
@@ -601,17 +601,15 @@ global gripper
 
 def init_gripper(mylimb):
     global gripper
-    print 'init gripper'
-    success = False
-    while not success:
-      try:
-	gripper = baxter_interface.Gripper(mylimb, CHECK_VERSION)
-	print 'gripper initialised'
-	success = True
-      except OSError:
-	print 'OSError'
-	success = False
+    print 'init gripper ', mylimb
+    gripper = baxter_interface.Gripper(mylimb, CHECK_VERSION)
+    print 'gripper initialised'
+    print 'calibrating gripper', mylimb
     gripper.calibrate()
+    print 'calibration done'
+    gripper.open()
+    print 'gripper open'
+    
     return gripper
 
 global leftBlockPos
