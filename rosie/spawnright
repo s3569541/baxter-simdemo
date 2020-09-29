@@ -40,7 +40,13 @@ rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markertable/model.sdf -model ta
 # rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4/model.sdf -model marker24 -x 0.65 -y -0.55 -z 0.85
 
 # Pyramid of 4
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker21 -x 0.555 -y -0.55 -z 0.75 # -Y 0.5 -P -0.0 -R -0.0
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_2/model.sdf -model marker22 -x 0.6 -y -0.55 -z 0.75 # -Y 0.7 -P -0.0 -R -0.0
-rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_3/model.sdf -model marker23 -x 0.57 -y -0.55 -z 0.79 # -Y 0.3 -P -0.0 -R -0.0
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker21 -x 0.555 -y -0.55 -z 0.75 # -Y 0.5 -P -0.0 -R -0.0
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_2/model.sdf -model marker22 -x 0.6 -y -0.55 -z 0.75 # -Y 0.7 -P -0.0 -R -0.0
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_3/model.sdf -model marker23 -x 0.57 -y -0.55 -z 0.79 # -Y 0.3 -P -0.0 -R -0.0
 # rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4/model.sdf -model marker24 -x 0.57 -y -0.55 -z 0.83
+
+# Tower of 4
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker21 -x 0.57 -y -0.55 -z 0.75 # -Y 0.5 -P -0.0 -R -0.0
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_2/model.sdf -model marker22 -x 0.57 -y -0.55 -z 0.8 # -Y 0.7 -P -0.0 -R -0.0
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_3/model.sdf -model marker23 -x 0.57 -y -0.55 -z 0.85 # -Y 0.3 -P -0.0 -R -0.0
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4/model.sdf -model marker24 -x 0.57 -y -0.55 -z 0.9

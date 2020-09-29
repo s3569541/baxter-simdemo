@@ -18,8 +18,17 @@ function delete_model() {
 
 echo Deleting models
 
-delete_model marker4
+delete_model marker14
+delete_model marker13
+delete_model marker12
+delete_model marker11
 delete_model table1
+
+delete_model marker24
+delete_model marker23
+delete_model marker22
+delete_model marker21
+delete_model table2
 
 echo "Spawning models?" ${SPAWN}
 
