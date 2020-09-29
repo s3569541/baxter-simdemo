@@ -88,15 +88,19 @@ def init():
         try:
             lgroup = moveit_commander.MoveGroupCommander("left_arm")
         except:
-            print "Time out error inisialising MoveGroupCommander('left_arm')"
+            print "Time out error inisialising moveit_commander('left_arm')"
             trys-=1
     while rgroup == None and trys > 0:
         try:
             rgroup = moveit_commander.MoveGroupCommander("right_arm")
         except:
-            print "Time out error inisialising MoveGroupCommander('right_arm')"
+            print "Time out error inisialising moveit_commander('right_arm')"
             trys-=1
 
+    if rgroup == None or lgroup == None:
+        print "Failed to initialise moveit_commander, please try again."
+        moveit_commander.roscpp_shutdown()
+        moveit_commander.os._exit(0)
     # this is necessaary to reduce number pf joint failures to increase precision of movements
     lgroup.set_max_acceleration_scaling_factor(0.3)
     rgroup.set_max_acceleration_scaling_factor(0.3)
