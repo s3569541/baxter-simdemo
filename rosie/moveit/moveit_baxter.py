@@ -53,8 +53,6 @@ from std_msgs.msg import Header
 
 global lgroup
 global rgroup
-lgroup = None, 
-rgroup = None
 global robot
 global mylimb
 mylimb = ''
@@ -69,6 +67,9 @@ def init():
     global mylimb
     global display_trajectory_publisher
 
+    lgroup = None
+    rgroup = None
+
     mylimb = 'left'
     # Instantiate a RobotCommander object.  This object is
     # an interface to the robot as a whole.
@@ -82,8 +83,16 @@ def init():
                                             queue_size=20)
 
     robot = moveit_commander.RobotCommander()
-    lgroup = moveit_commander.MoveGroupCommander("left_arm")
-    rgroup = moveit_commander.MoveGroupCommander("right_arm")
+    while lgroup == None:
+        try:
+            lgroup = moveit_commander.MoveGroupCommander("left_arm")
+        except:
+            print "Time out error"
+    while rgroup == None:
+        try:
+            rgroup = moveit_commander.MoveGroupCommander("right_arm")
+        except:
+            print "Time out error"
     success = True
 
     # this is necessaary to reduce number pf joint failures to increase precision of movements
@@ -97,8 +106,10 @@ def init():
     print("~~~~~~ init and calibration complete ~~~~~~~~~~")
 
 def locateBlock(camera, marker):
-    print "\nLocating block: ", marker
+    print "\Updating block: ", marker, "position..."
     rospy.sleep(2)
+    d5 = {}
+    d = {}
     if marker in locallib.avgmarkerpos:
         d5 = locallib.avgmarkerpos[marker]
     if camera in d5:
@@ -112,7 +123,7 @@ def locateBlock(camera, marker):
 def pick(target_marker_id):
 
     move_arm('left', 0.65, 0.7, -0.1)
-    print "Moving to inital scan position"
+    print "Moving to scan position"
 
     global lgripper
     global mylimb
