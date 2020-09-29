@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import socket
 import math
 import time
@@ -180,21 +178,6 @@ print 'get_param /robot_description done'
 
 def ik_solve(limb,pose,frame):
     return trac_ik_solve(limb,pose,frame)
-
-# joints: 
-#  - 
-#    header: 
-#      seq: 0
-#      stamp: 
-#        secs: 0
-#        nsecs:         0
-#      frame_id: ''
-#    name: [right_s0, right_s1, right_e0, right_e1, right_w0, right_w1, right_w2]
-#    position: [0.2561138207510154, -0.6456376771715344, 0.6654558305409705, 0.6501751367692917, -0.5169514656977631, 1.6621515293700257, -0.13885424105804758]
-#    velocity: []
-#    effort: []
-#isValid: [True]
-#result_type: [2]
 
 def make_move_baxter(msg, limb, speed):
     print 'make_move',msg
@@ -480,13 +463,13 @@ def block_master_frame_id(blocknr):
 
 # get Top or Bottom marker to find yaw info for gripper pose
 def get_top_or_bot_blockface(marker,master_pose):
-  print 'get_top_or_bot_blockface'
+#   print 'get_top_or_bot_blockface'
   frame = marker.header.frame_id
   blocknr = block_nr(marker)
   #master_pose = translate_frame(make_pose_stamped(marker.pose.pose.position,ori=marker.pose.pose.orientation,frame_id=frame), 'head')
   master_frame_id = block_master_frame_id(blocknr)
   # master currently to Rosie's right
-  print 'marker frame',frame,'master pose',master_pose,'master_frame_id',master_frame_id
+#   print 'marker frame',frame,'master pose',master_pose,'master_frame_id',master_frame_id
   master_frame = new_frame(master_pose, master_frame_id)
   center_pose = translate_frame(translate_pose_in_own_frame(master_pose,'center',0,0,-0.02),'head')
   ws = 0.02
@@ -500,16 +483,46 @@ def get_top_or_bot_blockface(marker,master_pose):
   # face offset 4 in bundle (currently 'bot')
   side2 = PoseStamped(header=Header(frame_id=master_frame_id, stamp=rospy.Time.now()),pose=Pose(position=Point(0,-ws,-ws),orientation=quat_from_euler(0,qt,-qt)))
   side2_headpose = translate_frame(side2,'head')
-  print 'master pose',master_pose
-  print 'side1 pose',side1_headpose
-  print 'side2 pose',side2_headpose
+#   print 'master pose',master_pose
+#   print 'side1 pose',side1_headpose
+#   print 'side2 pose',side2_headpose
   marker0_topic.publish(master_pose)
   marker1_topic.publish(side1_headpose)
   marker2_topic.publish(side2_headpose)
-  print 'rpy: master',euler_from_quat(master_pose.pose.orientation),'side1',euler_from_quat(side1_headpose.pose.orientation),'side2',euler_from_quat(side2_headpose.pose.orientation)
+#   print 'rpy: master',euler_from_quat(master_pose.pose.orientation),'side1',euler_from_quat(side1_headpose.pose.orientation),'side2',euler_from_quat(side2_headpose.pose.orientation)
   mz = master_pose.pose.position.z
   s1z = side1_headpose.pose.position.z
   s2z = side2_headpose.pose.position.z
+
+  #
+  # find distinguished side - attempt 1 - find two sides within tolerance of each other's Z ordinate
+  #
+  #other = None
+  #top = None
+  #commonz = None
+  #otherz = None
+  ## close === closer than
+  #def close(z1, z2):
+  #  tol = 0.008
+  #  print 'close?',z1,z2,'delta',abs(z1 - z2), '<',tol,'?', abs(z1 - z2) < tol
+  #  return (abs(z1 - z2) < tol)
+  #print "mz",mz,"s1z",s1z,"s2z",s2z
+  #if close(mz, s1z):
+  #    print 'other is side2'
+  #    commonz = mz
+  #    other = side2_headpose
+  #    otherz = s2z
+  #if close(mz, s2z):
+  #    print 'other is side1'
+  #    commonz = mz
+  #    other = side1_headpose
+  #    otherz = s1z
+  #if close(s1z, s2z):
+  #    print 'other is master'
+  #    commonz = s1z
+  #    other = master_pose
+  #    otherz = mz
+
   #
   # find distinguished side - attempt 2 - find side with most different Z ordinate
   #
@@ -534,12 +547,12 @@ def get_top_or_bot_blockface(marker,master_pose):
       commonz = mz
       other = side1_headpose
       otherz = s1z
-  if otherz == None:
-      print 'WARNING: assertion failure'
-  if otherz > commonz:
-      print 'top',otherz,'vs',commonz
-  else:
-      print 'bot',otherz,'vs',commonz
+#   if otherz == None:
+#       print 'WARNING: assertion failure'
+#   if otherz > commonz:
+#       print 'top',otherz,'vs',commonz
+#   else:
+#       print 'bot',otherz,'vs',commonz
   topbot = other
   return (topbot,center_pose)
 
@@ -596,37 +609,69 @@ def init_gripper(mylimb):
     print 'gripper open'
     return gripper
 
-global avgpos
-global avgyaw
-avgpos = None
-avgyaw = None
+global leftBlockPos
+global rightBlockPos
 
-def getavgpos(target_marker_id):
+def getLeftBlockPositions():
+    return leftBlockPos
+
+def getRightBlockPositions():
+    return rightBlockPos
+
+def getavgpos(camera, target_marker_id):
     global avgpos
     global avgyaw
-    d5 = {}
+    global last_seen
+    global pos_in_frame
+    global topbot
+    global center_pose
+    global avgmarkerpos
+    # avgmarkerpos = avgmarkerpos
+    d0 = {}
     d = {}
     print 'awaiting Alvar avg'
-    rospy.sleep(2)
+    rospy.sleep(1)
     if target_marker_id in avgmarkerpos:
-        d5 = avgmarkerpos[target_marker_id]
-    if 'head_camera' in d5:
-        d = d5['head_camera']
-    if 'right_hand_camera' in d5:
-        d = d5['right_hand_camera']
-    if 'left_hand_camera' in d5:
-        d = d5['left_hand_camera']
+        d0 = avgmarkerpos[target_marker_id]
+    if camera in d0:
+        d = d0[camera]
     if 'avg' in d:
-        avgpos = d['avg']
-        avgyaw = d['avg_rpy'][2]
-    print '- alvar','avg pos\n',avgpos,'\navg yaw',avgyaw
-    return (avgpos,avgyaw)
+        marker = d['marker']
+        (topbot,center_pose) = get_top_or_bot_blockface(marker,d['avg_master_pose'])
+        #avgpos = d['avg']
+        avgpos = center_pose.pose.position
+        #avgyaw = d['avg_rpy'][2]
+        rpy = euler_from_quat(topbot.pose.orientation)
+        # print 'avgpos',avgpos,'rpy',rpy
+        avgyaw = rpy[2]
+        # experimental: canonicalise yaw to improve stability of path to pickup (suspect yaw sometimes "flips" to different representation of same canonical angle??)
+        while avgyaw < 0:
+            avgyaw = avgyaw + math.pi
+        while avgyaw > math.pi:
+            avgyaw = avgyaw - math.pi
+        last_seen = d['last_seen']
+        pos_in_frame = marker.pose.pose.position
+        frame = d['frame']
+        # print '- getavgpos','avg pos',avgpos,'avg rpy',d['avg_rpy'],'last sighting',rospy.get_time() - last_seen,'s ago'
+        # print '- marker wrt ',frame,':',pos_in_frame.x,pos_in_frame.y,pos_in_frame.z
+        if camera == 'left_hand_camera':
+            leftBlockPos[target_marker_id] = {"AvgPos": avgpos, "avgyaw" : avgyaw}
+        else:
+            rightBlockPos[target_marker_id] = {"AvgPos": avgpos, "avgyaw" : avgyaw}
+        return avgpos,avgyaw
+    return False
 
 global node_name
 
+# have a look at how ian does this:
 def init(nodename='locallib', target_marker_fn=any_marker):
     global node_name
     node_name = nodename
+    
+    global leftBlockPos
+    global rightBlockPos
+    leftBlockPos = {}
+    rightBlockPos = {}
 
     global _target_marker_fn
     _target_marker_fn = target_marker_fn
