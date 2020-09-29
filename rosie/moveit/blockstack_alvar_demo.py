@@ -26,20 +26,8 @@ global center_pose
 locallib.init(nodename='pickup_alvar_demo')
 moveit_baxter.init()
 
+# range of marker blocks spawned in sim:
 availableMarkers = [0,10,20,30]
-
-'''
-the following will put the right arm in a good position for pyramid stack
-this needs to be run on initial start up
-'''
-# print("Move arm to initial scanning position")
-# moveit_baxter.move_arm('left', 0.55, 0.7, -0.1)
-# rgripper = locallib.init_gripper("right")
-# moveit_baxter.move_arm('right', 0.57, -0.55, -0.09, 0.475801111046, 0.520671447619, -0.488470343501, 0.513722950511)
-# moveit_baxter.terminate()
-
-global mylimb
-mylimb = 'left'
 
 markers = {}
 while markers == {}:
