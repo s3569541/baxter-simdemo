@@ -119,7 +119,7 @@ def locateBlock(camera, marker):
 
     avgpos,avgyaw = locallib.getavgpos(camera, marker)
 
-    print "New Pos: ", avgpos, "\nYaw: ",avgyaw
+    print "New Pos:\n", avgpos, "\nYaw:",avgyaw
     return avgpos,avgyaw
 
 def pick(target_marker_id):
