@@ -35,7 +35,7 @@ rightStackMarkers = {}
 # Get locations of all blocks in right arm stack
 for marker in markers:
   if marker in availableMarkers:
-    avgpos,avgyaw = locallib.getavgpos('right_hand_camera', marker)
+    avgpos,avgyaw = moveit_baxter.locateBlock('right_hand_camera', marker)
     rightStackMarkers[marker] = {"AvgPos": avgpos, "avgyaw" : avgyaw}
 
 # sort the right stack block ids by z axis value so the lowest blocks get stacked first
@@ -49,6 +49,6 @@ stackOrder.sort(key=sortSecond)
 
 for marker in stackOrder:
   moveit_baxter.pick(marker[1])
-  moveit_baxter.place(marker[1], rightStackMarkers[marker[1]]['AvgPos'], rightStackMarkers[marker[1]]['avgyaw'])
+  moveit_baxter.place(rightStackMarkers[marker[1]]['AvgPos'], rightStackMarkers[marker[1]]['avgyaw'])
 
 moveit_baxter.terminate()

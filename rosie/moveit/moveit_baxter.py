@@ -111,6 +111,17 @@ def init():
 
     print("~~~~~~ init and calibration complete ~~~~~~~~~~")
 
+def locateBlock(camera, marker):
+    
+    print "\nLocating marker: ", marker
+    while(locallib.getavgpos(camera, marker)==False):
+        rospy.sleep(2)
+
+    avgpos,avgyaw = locallib.getavgpos(camera, marker)
+
+    print "New Pos: ", avgpos, "\nYaw: ",avgyaw
+    return avgpos,avgyaw
+
 def pick(target_marker_id):
 
     move_arm('left', 0.65, 0.7, -0.1)
@@ -119,7 +130,7 @@ def pick(target_marker_id):
     global lgripper
     global mylimb
     
-    avgpos, avgyaw = locallib.getavgpos('left_hand_camera', target_marker_id)
+    avgpos, avgyaw = locateBlock('left_hand_camera', target_marker_id)
 
     print '******* move to proper sighting pos ********'
     newPoseBase = locallib.translate_frame(locallib.make_pose_stamped_yaw(avgpos, 'head', avgyaw), 'base')
@@ -129,7 +140,7 @@ def pick(target_marker_id):
     move_arm(mylimb, pos.x, pos.y, pos.z+0.08)#, ori[0], ori[1], ori[2], ori[3])
 
     rospy.sleep(0.5)
-    avgpos,avgyaw = locallib.getavgpos('left_hand_camera', target_marker_id)
+    avgpos,avgyaw = locateBlock('left_hand_camera', target_marker_id)
 
     newPoseBase = locallib.translate_frame(locallib.make_pose_stamped_yaw(avgpos, 'head', avgyaw), 'base')
     pos = newPoseBase.pose.position
@@ -139,7 +150,7 @@ def pick(target_marker_id):
     drop_arm(mylimb, pos.x, pos.y, pos.z+0.07)
 
     rospy.sleep(0.5)
-    avgpos,avgyaw = locallib.getavgpos('left_hand_camera', target_marker_id)
+    avgpos,avgyaw = locateBlock('left_hand_camera', target_marker_id)
 
     print 'move to grab'
     newPoseBase = locallib.translate_frame(locallib.make_pose_stamped_yaw(avgpos, 'head', avgyaw), 'base')
@@ -155,7 +166,7 @@ def pick(target_marker_id):
     print 'lift'
     raise_arm(0.1)
 
-def place(marker, avgpos, avgyaw):
+def place(avgpos, avgyaw):
     global mylimb
     global lgripper
 

@@ -609,14 +609,6 @@ def init_gripper(mylimb):
     print 'gripper open'
     return gripper
 
-global leftBlockPos
-global rightBlockPos
-
-def getLeftBlockPositions():
-    return leftBlockPos
-
-def getRightBlockPositions():
-    return rightBlockPos
 
 def getavgpos(camera, target_marker_id):
     global avgpos
@@ -654,11 +646,6 @@ def getavgpos(camera, target_marker_id):
         frame = d['frame']
         # print '- getavgpos','avg pos',avgpos,'avg rpy',d['avg_rpy'],'last sighting',rospy.get_time() - last_seen,'s ago'
         # print '- marker wrt ',frame,':',pos_in_frame.x,pos_in_frame.y,pos_in_frame.z
-        if camera == 'left_hand_camera':
-            leftBlockPos[target_marker_id] = {"AvgPos": avgpos, "avgyaw" : avgyaw}
-        else:
-            rightBlockPos[target_marker_id] = {"AvgPos": avgpos, "avgyaw" : avgyaw}
-        print "\n", camera, "\nmarker", target_marker_id, "Position\n", avgpos
         return avgpos,avgyaw
     return False
 
