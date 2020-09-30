@@ -85,20 +85,20 @@ services:
           - BAXTER_ONLY=${BAXTER_ONLY}
           - ROS_MASTER_URI="http://gazebo:11311"
         entrypoint: ["/root/rosie/rosie-main-guest-runner"]
-    vxlab-rosie-nav:
-        depends_on: [gazebo]
-        container_name: vxlab-rosie-nav
-        build:
-          context: .
-          dockerfile: Dockerfile.nav
-        networks:
-          vxlab:
-        volumes:
-        - type: bind
-          source: ./rosie
-          target: /root/rosie
-        environment:
-          - DISPLAY=${XDISPLAY}
+    # vxlab-rosie-nav:
+    #     depends_on: [gazebo]
+    #     container_name: vxlab-rosie-nav
+    #     build:
+    #       context: .
+    #       dockerfile: Dockerfile.nav
+    #     networks:
+    #       vxlab:
+    #     volumes:
+    #     - type: bind
+    #       source: ./rosie
+    #       target: /root/rosie
+    #     environment:
+    #       - DISPLAY=${XDISPLAY}
     alvar-left:
         << : *alvar
         container_name: alvar-left
