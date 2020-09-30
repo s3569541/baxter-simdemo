@@ -45,34 +45,42 @@ def scanBlockStack(availableMarkers):
       avgpos,avgyaw = moveit_baxter.locateBlock('right_hand_camera', marker)
       rightStackMarkers[marker] = ({"AvgPos": {"x": avgpos.x, "y": avgpos.y, "z": avgpos.z}, "avgyaw" : avgyaw})
 
-  # sort the right stack block ids by z axis value so the lowest blocks get stacked first
+  return rightStackMarkers
+
+def createStack(stackOrder):
+  blockdata = json.loads(stackOrder)
+
   stackOrder = []
-  for marker in rightStackMarkers:
-    stackOrder.append((rightStackMarkers[marker]['AvgPos']["z"], marker))
+  for marker in blockdata:
+    stackOrder.append((blockdata[marker]['AvgPos']["z"], marker))
 
   def sortSecond(val): 
     return val[0]
   
   stackOrder.sort(key=sortSecond) 
 
-  final = {}
+  finalOrder = []
   for marker in stackOrder:
-    final[marker[1]] = (rightStackMarkers[marker[1]])
-  # print "!!final!!\n", final
-  return final
+    # print "Marker:", marker[1], " \n", blockdata[marker[1]], "\n"
+    finalOrder.append((marker[1],  blockdata[marker[1]]))
 
-def createStack(stackOrder):
-  blockorder = json.loads(stackOrder)
-  for marker in blockorder:
-    avgpos = moveit_baxter.pick('left', int(marker))
-    pose = blockorder[marker]['AvgPos']
-    avgpos.x = pose["x"]
-    avgpos.y = pose["y"]
-    avgpos.z = pose["z"]
-    moveit_baxter.place('left', avgpos, blockorder[marker]['avgyaw'])
+  print "stack order\n", stackOrder  
+  for marker in finalOrder:
+    print marker[0]
+    print marker[1]['AvgPos']
+
+  for marker in finalOrder:
+    avgpos = moveit_baxter.pick('left', int(marker[0]))
+    avgpos.x = marker[1]['AvgPos']['x']
+    avgpos.y = marker[1]['AvgPos']['y']
+    avgpos.z = marker[1]['AvgPos']['z']
+    moveit_baxter.place('left', avgpos, int(marker[1]['avgyaw']))
+
+  moveit_baxter.terminate()
 
 def callback(data):
   rospy.loginfo(rospy.get_caller_id() + "\nI heard %s", data.data)
+  print data.data
   createStack(data.data)
   
 if twins:
