@@ -98,8 +98,8 @@ def init():
         moveit_commander.roscpp_shutdown()
         moveit_commander.os._exit(0)
     # this is necessaary to reduce number pf joint failures to increase precision of movements
-    lgroup.set_max_acceleration_scaling_factor(0.7)
-    rgroup.set_max_acceleration_scaling_factor(0.7)
+    lgroup.set_max_acceleration_scaling_factor(0.5)
+    rgroup.set_max_acceleration_scaling_factor(0.5)
 
     print 'calibrate / open left gripper'
     global lgripper
@@ -115,7 +115,7 @@ def locateBlock(camera, marker):
         rospy.sleep(0.5)
     
     avgpos,avgyaw = locallib.getavgpos(camera, marker)
-    
+
     print "New Pos:\n", avgpos, "\nYaw:",avgyaw
     return avgpos,avgyaw
 
