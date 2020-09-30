@@ -54,8 +54,6 @@ from std_msgs.msg import Header
 global lgroup
 global rgroup
 global robot
-global mylimb
-mylimb = ''
 global lgripper
 global rgripper
 global display_trajectory_publisher
@@ -64,13 +62,11 @@ def init():
     global robot
     global lgroup
     global rgroup
-    global mylimb
     global display_trajectory_publisher
 
     lgroup = None
     rgroup = None
 
-    mylimb = 'left'
     # Instantiate a RobotCommander object.  This object is
     # an interface to the robot as a whole.
 
@@ -102,8 +98,8 @@ def init():
         moveit_commander.roscpp_shutdown()
         moveit_commander.os._exit(0)
     # this is necessaary to reduce number pf joint failures to increase precision of movements
-    lgroup.set_max_acceleration_scaling_factor(0.3)
-    rgroup.set_max_acceleration_scaling_factor(0.3)
+    lgroup.set_max_acceleration_scaling_factor(0.7)
+    rgroup.set_max_acceleration_scaling_factor(0.7)
 
     print 'calibrate / open left gripper'
     global lgripper
@@ -113,22 +109,21 @@ def init():
 
 def locateBlock(camera, marker):
     
-    print "\nLocating marker: ", marker
+    print "\nLocating marker:", marker, "from" , camera
     while(locallib.getavgpos(camera, marker)==False):
-        rospy.sleep(2)
+        rospy.sleep(0.5)
 
     avgpos,avgyaw = locallib.getavgpos(camera, marker)
 
     print "New Pos:\n", avgpos, "\nYaw:",avgyaw
     return avgpos,avgyaw
 
-def pick(target_marker_id):
+def pick(mylimb, target_marker_id):
 
-    move_arm('left', 0.65, 0.7, -0.1)
+    move_arm(mylimb, 0.65, 0.7, -0.1)
     print "Moving to scan position"
 
     global lgripper
-    global mylimb
     
     avgpos, avgyaw = locateBlock('left_hand_camera', target_marker_id)
 
@@ -165,9 +160,9 @@ def pick(target_marker_id):
     lgripper.close()
     print 'lift'
     raise_arm(0.1)
+    return avgpos
 
-def place(avgpos, avgyaw):
-    global mylimb
+def place(mylimb, avgpos, avgyaw):
     global lgripper
 
     newPoseBase = locallib.translate_frame(locallib.make_pose_stamped_yaw(avgpos, 'head', avgyaw), 'base')
