@@ -632,7 +632,7 @@ def getavgpos(camera, target_marker_id):
     d = {}
     print 'awaiting Alvar avg'
     rospy.sleep(1)
-    print "tagert marker id:", target_marker_id
+    # print "tagert marker id:", target_marker_id
     if target_marker_id in avgmarkerpos:
         d0 = avgmarkerpos[target_marker_id]
     if camera in d0:
@@ -660,7 +660,7 @@ def getavgpos(camera, target_marker_id):
             leftBlockPos[target_marker_id] = {"AvgPos": avgpos, "avgyaw" : avgyaw}
         else:
             rightBlockPos[target_marker_id] = {"AvgPos": avgpos, "avgyaw" : avgyaw}
-        print "\n", camera, "\nmarker", target_marker_id, "Position\n", avgpos
+        # print "\n", camera, "\nmarker", target_marker_id, "Position\n", avgpos
         return avgpos,avgyaw
     return False
 

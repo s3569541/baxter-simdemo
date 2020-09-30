@@ -74,7 +74,7 @@ def createStack(stackOrder):
 def callback(data):
   rospy.loginfo(rospy.get_caller_id() + "\nI heard %s", data.data)
   createStack(data.data)
-
+  
 if twins:
   if primary:
     locallib.init('scanner')
@@ -82,7 +82,7 @@ if twins:
     # moveit_baxter.init()
     pub = rospy.Publisher('/rosie/blockstack', String, queue_size=10)
 
-    stackOrder = scanBlockStack([0,10])#,20,30])
+    stackOrder = scanBlockStack([0,10,20,30])
     json_mylist = json.dumps(stackOrder, separators=(',', ':'))
 
     while not rospy.is_shutdown():
