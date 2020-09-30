@@ -111,13 +111,11 @@ def locateBlock(camera, marker):
     
     print "\nLocating marker:", marker, "from" , camera
 
-    avgpos,avgyaw = locallib.getavgpos(camera, marker)
-    while(avgpos==False):
+    while(locallib.getavgpos(camera, marker)==False):
         rospy.sleep(0.5)
-        avgpos,avgyaw = locallib.getavgpos(camera, marker)
-
     
-
+    avgpos,avgyaw = locallib.getavgpos(camera, marker)
+    
     print "New Pos:\n", avgpos, "\nYaw:",avgyaw
     return avgpos,avgyaw
 
