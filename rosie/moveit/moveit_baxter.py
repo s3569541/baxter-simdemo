@@ -28,6 +28,11 @@ import Queue
 
 import moveit_baxter
 
+import baxter_interface
+import baxter_external_devices
+
+from baxter_interface import CHECK_VERSION
+
 from ar_track_alvar_msgs.msg import AlvarMarkers
 from gazebo_msgs.srv import GetModelState
 #import tf
@@ -101,19 +106,27 @@ def init():
     lgroup.set_max_acceleration_scaling_factor(0.5)
     rgroup.set_max_acceleration_scaling_factor(0.5)
 
-    print 'calibrate / open left gripper'
-    global lgripper
-    lgripper = locallib.init_gripper('left')
+    print("~~~~~~ init complete ~~~~~~~~~~")
 
-    print("~~~~~~ init and calibration complete ~~~~~~~~~~")
+def init_left_gripper():
+    global lgripper
+    print 'init gripper ', "left"
+    lgripper = baxter_interface.Gripper("left", CHECK_VERSION)
+    print 'gripper initialised'
+    print 'calibrating gripper', "left"
+    lgripper.calibrate()
+    print 'calibration done'
+    lgripper.open()
+    print 'gripper open'
+    return lgripper
 
 def locateBlock(camera, marker):
-    
+
     print "\nLocating marker:", marker, "from" , camera
 
     while(locallib.getavgpos(camera, marker)==False):
         rospy.sleep(0.5)
-    
+        
     avgpos,avgyaw = locallib.getavgpos(camera, marker)
 
     print "New Pos:\n", avgpos, "\nYaw:",avgyaw
@@ -121,9 +134,11 @@ def locateBlock(camera, marker):
 
 def pick(mylimb, target_marker_id):
 
-    move_arm(mylimb, 0.65, 0.7, -0.1)
-    print "Moving to scan position"
+    move_arm(mylimb, 0.7, 0.2, -0.09)
+    # move_arm("right", 0.4, -0.6, 0.1)
 
+    print "Moved to scan position"
+    
     global lgripper
     
     avgpos, avgyaw = locateBlock('left_hand_camera', target_marker_id)
@@ -142,8 +157,8 @@ def pick(mylimb, target_marker_id):
     pos = newPoseBase.pose.position
     ori = quaternion_from_euler(3.14, 0, avgyaw)
 
-    # move_arm(mylimb, pos.x, pos.y, pos.z+0.07)#, ori[0], ori[1], ori[2], ori[3])
-    drop_arm(mylimb, pos.x, pos.y, pos.z+0.07)
+    # move_arm(mylimb, pos.x, pos.y, pos.z+0.07, ori[0], ori[1], ori[2], ori[3])
+    drop_arm(mylimb, pos.x, pos.y, pos.z+0.05)
 
     rospy.sleep(0.5)
     avgpos,avgyaw = locateBlock('left_hand_camera', target_marker_id)
@@ -153,7 +168,7 @@ def pick(mylimb, target_marker_id):
     pos = newPoseBase.pose.position
     ori = quaternion_from_euler(3.14, 0, avgyaw)
 
-    drop_arm(mylimb, pos.x, pos.y, pos.z+0.005)
+    drop_arm(mylimb, pos.x, pos.y, pos.z+0.01)
 
     ### Close grippers
     print 'close (grab)'
@@ -171,7 +186,7 @@ def place(mylimb, avgpos, avgyaw):
     ori = quaternion_from_euler(3.14, 0, avgyaw)
 
     print 'Stack'
-    move_arm(mylimb, pos.x, pos.y*-1, pos.z+0.04)#, ori[0]), ori[1], ori[2], ori[3])
+    move_arm(mylimb, pos.x, pos.y, pos.z+0.04)#, ori[0], ori[1], ori[2], ori[3])
 
     rospy.sleep(0.5)
     lgripper.open()
@@ -185,6 +200,12 @@ def move_arm(limb, x, y, z, ox = 0.0, oy = 1.0, oz = 0.0, ow = 0.0):
     global robot
     global display_trajectory_publisher
     # Planning to a Pose goal
+    print "Moving to:\nx =", x, "y =", y, "z =", z, "ox =", ox, "oy =", oy, "oz =", oz, "ow =", ow, "\n"
+    # ignore yaw:
+    # ox = 0.0
+    # oy = 1.0
+    # oz = 0.0
+    # ow = 0.0
     
     if(limb == 'left'):
         left_current_pose = lgroup.get_current_pose(end_effector_link='left_gripper').pose

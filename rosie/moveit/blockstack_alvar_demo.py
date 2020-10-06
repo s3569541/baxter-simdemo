@@ -37,15 +37,14 @@ def scanBlockStack(availableMarkers):
   print "\nKnown Block Numbers"
   for marker in markers:
     print marker
-
-  rightStackMarkers = {}
+  scannedMarkers = {}
   # Get locations of all blocks in right arm stack
   for marker in markers:
     if marker in availableMarkers:
-      avgpos,avgyaw = moveit_baxter.locateBlock('right_hand_camera', marker)
-      rightStackMarkers[marker] = ({"AvgPos": {"x": avgpos.x, "y": avgpos.y, "z": avgpos.z}, "avgyaw" : avgyaw})
+      avgpos,avgyaw = moveit_baxter.locateBlock("right_hand_camera", marker)
+      scannedMarkers[marker] = ({"AvgPos": {"x": avgpos.x, "y": avgpos.y, "z": avgpos.z}, "avgyaw" : avgyaw})
 
-  return rightStackMarkers
+  return scannedMarkers
 
 def createStack(stackOrder):
   blockdata = json.loads(stackOrder)
@@ -74,20 +73,19 @@ def createStack(stackOrder):
     avgpos.x = marker[1]['AvgPos']['x']
     avgpos.y = marker[1]['AvgPos']['y']
     avgpos.z = marker[1]['AvgPos']['z']
-    moveit_baxter.place('left', avgpos, int(marker[1]['avgyaw']))
+    moveit_baxter.place('left', avgpos, float(marker[1]['avgyaw']))
 
   moveit_baxter.terminate()
 
 def callback(data):
-  rospy.loginfo(rospy.get_caller_id() + "\nI heard %s", data.data)
+  # rospy.loginfo(rospy.get_caller_id() + "\nI heard %s", data.data)
   print data.data
   createStack(data.data)
   
 if twins:
   if primary:
     locallib.init('scanner')
-    # uncomment this if you need to move the arm to scan:
-    # moveit_baxter.init()
+    moveit_baxter.init()
     pub = rospy.Publisher('/rosie/blockstack', String, queue_size=10)
 
     stackOrder = scanBlockStack([0,10,20,30])
@@ -102,12 +100,14 @@ if twins:
   else:
     locallib.init('stacker')
     moveit_baxter.init()
+    moveit_baxter .init_left_gripper()
     rospy.Subscriber('/rosie/blockstack', String, callback)
     rospy.spin()
 
 else:
   locallib.init(nodename='pickup_alvar_demo')
   moveit_baxter.init()
+  moveit_baxter.init_left_gripper()
   blockStack = scanBlockStack([0,10,20,30])
   createStack(blockStack)
 
