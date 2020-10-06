@@ -18,6 +18,12 @@ function delete_model() {
 
 echo Deleting models
 
+delete_model marker4
+delete_model marker3
+delete_model marker2
+delete_model marker1
+delete_model table
+
 delete_model marker14
 delete_model marker13
 delete_model marker12

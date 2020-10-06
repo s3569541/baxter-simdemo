@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Gazebo / Baxter drivers do not respond well to malformed deletes ... ?
+# Appears to cause failure with error: "[FATAL] [1597221904.084218604]: The internal stop and start request lists are not empty at the beginning of the swithController() call. This should not happen."
+
+function delete_model() {
+  modelname=$1	 
+  echo "Checking if model $modelname needs to be deleted"
+  { ~/rosie/get_gazebo_models.py | egrep "'${modelname}'" ; } && echo Deleting $modelname && rosservice call /gazebo/delete_model $modelname
+}
+
+delete_model marker4
+delete_model marker3
+delete_model marker2
+delete_model marker1
+delete_model table
+
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markertable/model.sdf -model table -x 1.1 -y 0.0 -z 0.0
+
+# 4 with yaw
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.55 -y -0.0 -z 0.75 -Y 0.5 -P -0.0 -R -0.0
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_2/model.sdf -model marker2 -x 0.55 -y -0.1 -z 0.75 -Y 0.7 -P -0.0 -R -0.0
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_3/model.sdf -model marker3 -x 0.66 -y -0.1 -z 0.75 -Y 0.3 -P -0.0 -R -0.0
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4/model.sdf -model marker4 -x 0.66 -y -0.0 -z 0.75
+
+# Pyramid of 4
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.585 -y -0.2 -z 0.75
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_2/model.sdf -model marker2 -x 0.63 -y -0.2 -z 0.75
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_3/model.sdf -model marker3 -x 0.6 -y -0.2 -z 0.79
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4/model.sdf -model marker4 -x 0.6 -y -0.2 -z 0.83
+
+# # Two Stacks of Two
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.55 -y -0.2 -z 0.75 
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_2/model.sdf -model marker2 -x 0.65 -y -0.2 -z 0.75
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_3/model.sdf -model marker3 -x 0.55 -y -0.2 -z 0.85
+# rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4/model.sdf -model marker4 -x 0.65 -y -0.2 -z 0.85
+
+# Tower of 4
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.6 -y -0.2 -z 0.75 
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_2/model.sdf -model marker2 -x 0.6 -y -0.2 -z 0.8
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_3/model.sdf -model marker3 -x 0.6 -y -0.2 -z 0.85
+rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_4/model.sdf -model marker4 -x 0.6 -y -0.2 -z 0.9
