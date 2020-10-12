@@ -186,7 +186,12 @@ def place(mylimb, avgpos, avgyaw):
     ori = quaternion_from_euler(3.14, 0, avgyaw)
 
     print 'Stack'
-    move_arm(mylimb, pos.x, pos.y, pos.z+0.04)#, ori[0], ori[1], ori[2], ori[3])
+    # ignor yaw
+    # move_arm(mylimb, pos.x, pos.y, pos.z+0.04)
+
+    #with yaw
+    move_arm(mylimb, pos.x, pos.y, pos.z+0.08, ori[0], ori[1], ori[2], ori[3])
+    drop_arm(mylimb, pos.x, pos.y, pos.z+0.04)
 
     rospy.sleep(0.5)
     lgripper.open()
@@ -201,11 +206,6 @@ def move_arm(limb, x, y, z, ox = 0.0, oy = 1.0, oz = 0.0, ow = 0.0):
     global display_trajectory_publisher
     # Planning to a Pose goal
     print "Moving to:\nx =", x, "y =", y, "z =", z, "ox =", ox, "oy =", oy, "oz =", oz, "ow =", ow, "\n"
-    # ignore yaw:
-    # ox = 0.0
-    # oy = 1.0
-    # oz = 0.0
-    # ow = 0.0
     
     if(limb == 'left'):
         left_current_pose = lgroup.get_current_pose(end_effector_link='left_gripper').pose
