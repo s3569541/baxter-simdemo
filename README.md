@@ -46,43 +46,43 @@ You may need to run the gazebo client manually in the master container if it doe
 
 Scanning Baxter (gazebo container):
 		
-    docker exec -it gazebo bash
-		DISPLAY=novnc:0 gzclient 		      (view the simulated world)
+	docker exec -it gazebo bash
+	DISPLAY=novnc:0 gzclient 		      (view the simulated world)
 
-		docker exec -it gazebo bash
-		DISPLAY=novnc:0 rviz 			        (see Baxters view of the world)
+	docker exec -it gazebo bash
+	DISPLAY=novnc:0 rviz 			        (see Baxters view of the world)
 
-		docker exec -it gazebo bash
-		cd moveit && source ./init 		    (startup the moveIt framework)
-		
-		./set_arms_to_scan.py	init        (on start up only: moves left arm out of the way and opens grippers)
-		./set_arms_to_scan.py yaw    	    (set scanning arm to ideal position)
-		./spawnstack 		                  (uncomment only yaw instructions before execution)
-		./blockstack_alvar_demo.py primary (scans blocks and publishes result)
+	docker exec -it gazebo bash
+	cd moveit && source ./init 		    (startup the moveIt framework)
+
+	./set_arms_to_scan.py	init        (on start up only: moves left arm out of the way and opens grippers)
+	./set_arms_to_scan.py yaw    	    (set scanning arm to ideal position)
+	./spawnstack 		                  (uncomment only yaw instructions before execution)
+	./blockstack_alvar_demo.py primary (scans blocks and publishes result)
 
 
 Stacking Baxter (gazebo2 container):
 
-		docker exec -it gazebo2 bash
-		DISPLAY=novnc:0 gzclient 		      (view the simulated world)
+	docker exec -it gazebo2 bash
+	DISPLAY=novnc:0 gzclient 		      (view the simulated world)
 
-		docker exec -it gazebo2 bash
-		DISPLAY=novnc:0 rviz 			        (see Baxters view of the world)
+	docker exec -it gazebo2 bash
+	DISPLAY=novnc:0 rviz 			        (see Baxters view of the world)
 
-		docker exec -it gazebo2 bash
-		cd moveit && source ./init		    (startup the moveIt framework)
-		../twin-relay 			              (communication from gazebo to gazebo2)
+	docker exec -it gazebo2 bash
+	cd moveit && source ./init		    (startup the moveIt framework)
+	../twin-relay 			              (communication from gazebo to gazebo2)
 
-		docker exec -it gazebo2 bash
-		cd moveit && source ./init 		    (startup the moveIt framework)
-		./set_arms_to_scan.py 		        (on start up only: moves right arm out of the way)
-		./spawnpickup 				            (sets pickup blocks to ideal position)
-		./blockstack_alvar_demo.py stack 	(stacks blocks based on received data)
+	docker exec -it gazebo2 bash
+	cd moveit && source ./init 		    (startup the moveIt framework)
+	./set_arms_to_scan.py 		        (on start up only: moves right arm out of the way)
+	./spawnpickup 				            (sets pickup blocks to ideal position)
+	./blockstack_alvar_demo.py stack 	(stacks blocks based on received data)
 	
 
 When finished: 
   
-  docker-compose down --remove-orphans
+  	docker-compose down --remove-orphans
 
 
 ## Debug (Rviz)
