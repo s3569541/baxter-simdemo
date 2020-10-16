@@ -3,10 +3,8 @@
 
 ## Features:
 - Communication from a scanning Baxter to a stacking Baxter for a set of ALVAR marker blocks using ROS Topics
-- computer vision for Baxter (Alvar)
-- collection of demo scripts mounted under ~/rosie/moveit on blue-mir100 branch
-
-(Branch: blue-mir100)
+- Computer vision for Baxter (Alvar)
+- Collection of demo scripts mounted under ~/rosie/moveit on blue-mir100 branch
 
 ## Prerequisites:
 - docker-ce
@@ -24,7 +22,7 @@ First time only:
 `docker-compose -f docker-compose-two.yml up` (to have two gazebo simulations side by side)
 
 This will start several containers in the background:
-- vxlab-gazebo and vxlab-gazebo2  (Simulator "gzserver" and core assets for robots)
+- gazebo and gazebo2  (Simulator "gzserver" and core assets for robots)
 - novnc, display2 (X sessions for graphical output in browser)
 - alvar-head (Marker recognition for Rosie's head camera)
 
