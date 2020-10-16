@@ -1,19 +1,16 @@
-# baxter-mobility-base-simdemo (vxlab-blue branch)
-## ROS Simulation for Rosie (Baxter + Dataspeed Mobility Base) and Blue (MIR100) in VXLab
+# baxter-mobility-base-simdemo (blue-mir100 branch)
+## ROS Simulation for two Baxter's in two VXLab
 
 ## Features:
-- simultaneous navigation for both robots
-- computer vision for Rosie (Alvar)
-- collection of demo scripts mounted under ~/rosie in master container
-
-[![Rosie and Blue Navigating in VXLab](https://img.youtube.com/vi/Jtl_j8n0Mf8/0.jpg)](https://www.youtube.com/watch?v=Jtl_j8n0Mf8)
+- Communication from a scanning Baxter to a stacking Baxter for a set of ALVAR marker blocks using ROS Topics
+- computer vision for Baxter (Alvar)
+- collection of demo scripts mounted under ~/rosie/moveit on blue-mir100 branch
 
 (Recommended branch: blue-mir100)
 
 ## Prerequisites:
 - docker-ce
 - docker-compose
-- (optional mir100 in same sim: https://github.com/ipeakermit/mir_robot_in_vxlab_sim/tree/rosie-and-blue-1st-attempt)
 - optionally, edit 02proxy to point to a nearby Debian apt-cacher-ng proxy
 
 ## Build using:
@@ -21,17 +18,14 @@
 docker-compose build
 
 ## Run:
-
+First time only:
 ./create-vxlab-network
 
-`docker-compose up` (with output on terminal) or
-`docker-compose up -d` (run in background, supressing output)
+`docker-compose -f docker-compose-two.yml up` (to have two gazebo simulations side by side)
 
 This will start several containers in the background:
-- vxlab-rosie (Simulator "gzserver" and core assets for robots)
+- vxlab-gazebo and vxlab-gazebo2  (Simulator "gzserver" and core assets for robots)
 - novnc, display2 (X sessions for graphical output in browser)
-- vxlab-rosie-nav (Navigation for Rosie)
-- vxlab-blue (Navigation etc. for Blue)
 - alvar-head (Marker recognition for Rosie's head camera)
 
 To stop:
@@ -48,69 +42,54 @@ Point your browser at HOSTNAME:8080 (main output on "novnc" display) or HOSTNAME
 
 You may need to run the gazebo client manually in the master container if it does not start automatically; see below.
 
-## Master container demos / commands:
+## Scan/Stack demos:
 
-To connect to the console of master container:
+Scanning Baxter (gazebo container):
+		
+    docker exec -it gazebo bash
+		DISPLAY=novnc:0 gzclient 		      (view the simulated world)
 
-`docker exec -it vxlab-rosie bash`
+		docker exec -it gazebo bash
+		DISPLAY=novnc:0 rviz 			        (see Baxters view of the world)
 
-You can do this multiple times from multiple bash/terminal sessions.
+		docker exec -it gazebo bash
+		cd moveit && source ./init 		    (startup the moveIt framework)
+		
+		./set_arms_to_scan.py	init        (on start up only: moves left arm out of the way and opens grippers)
+		./set_arms_to_scan.py yaw    	    (set scanning arm to ideal position)
+		./spawnstack 		                  (uncomment only yaw instructions before execution)
+		./blockstack_alvar_demo.py primary (scans blocks and publishes result)
 
-(If the gazebo simulation client output (`gzclient`) has not already appeared, run:
 
-`DISPLAY=novnc:0 gzclient`
+Stacking Baxter (gazebo2 container):
 
-then press ctrl-Z, type `bg` and press ENTER to put gzclient in the background and get the bash prompt back. Refer to bash job control documentation for more information.)
+		docker exec -it gazebo2 bash
+		DISPLAY=novnc:0 gzclient 		      (view the simulated world)
 
-Demos for Rosie (`untuck` command may be required first to enable motors running):
-- Arm setup (once per session): `./untuck` (and optionally `./tuck`)
-- Mobility base movement (custom):
-  - `./leftrotate.py` and `./rightrotate.py`
-  - `./left.py` and `./right.py`
-  - `./forward.py`and `./back.py`
-- Pre-existing Baxter function beginning with: `rosrun baxter_examples <TAB>` or `rosrun baxter_tools <TAB>` (refer to Baxter documentation)
-- Arm movement under keyboard control: `rosrun baxter_examples joint_position_keyboard.py`
-- Arm movement using Trac inverse kinematics solver: `cd ikeg ; ./tractest.py` 
+		docker exec -it gazebo2 bash
+		DISPLAY=novnc:0 rviz 			        (see Baxters view of the world)
 
-Refer to documentation for Gazebo, Baxter, Mobility Base, MIR100, Navigation, etc.
+		docker exec -it gazebo2 bash
+		cd moveit && source ./init		    (startup the moveIt framework)
+		../twin-relay 			              (communication from gazebo to gazebo2)
 
-## Debug output (Rviz)
+		docker exec -it gazebo2 bash
+		cd moveit && source ./init 		    (startup the moveIt framework)
+		./set_arms_to_scan.py 		        (on start up only: moves right arm out of the way)
+		./spawnpickup 				            (sets pickup blocks to ideal position)
+		./blockstack_alvar_demo.py stack 	(stacks blocks based on received data)
+	
 
-Connect to console of main container (see elsewhere) and run:
+When finished: 
+  
+  docker-compose down --remove-orphans
 
-`DISPLAY=display2:0 rviz`
+
+## Debug (Rviz)
 
 Refer to documentation for Rviz. The Displays pane on the left hand side has an "Add" button which is just out of view off the bottom of the screen. You can drag to detach the Displays pane and move it somewhere more convenient.
 
 Press the Add button and explore adding different displays. The key ones are "Map" (by topic) and "Robot model" (by display type). Once these two are added you can also click on "2D Nav Goal", then click on the map to position an arrow for the desired location of the robot. Refer to ROS documentation for navigation.
-
-## Marker recognition (Alvar, Rviz)
-
-Move Rosie to where the head camera is pointed at the large block with the markers. The marker should appear in Rviz as a blue square in roughly the appropriate position.
-
-## MIR100 ("Blue")
-
-Connect to master container:
-
-`docker exec -it vxlab-rosie bash`
-
-then
-
-`./blue-minimal` (for model)
-
-`docker exec -it vxlab-blue bash`
-
-then
-
-`cd ~/mir100`
-
-`./rosie-and-blue`
-
-`./localization`
-
-`./navigation`
-
-A separate rviz is required for blue, launched from the vxlab-blue container.
 
 
 ## Notes:
@@ -120,5 +99,3 @@ A separate rviz is required for blue, launched from the vxlab-blue container.
 Some improvements are suggested at: http://wiki.ros.org/docker/Tutorials/GUI
 
 - Several containers mount a docker volume under "~/rosie". Thus, changes to this directory are persistent and cause changes to the directory with the same name on the container host. Be careful! Take backups!
-
-- baxter-only: run `BAXTER_ONLY=true docker-compose up`. When using rviz, use "Robot Description:  /robot_description" (instead of /mobility_base/robot_description). The alvar scripts may need to be modified in a similar way.
