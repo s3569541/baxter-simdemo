@@ -6,7 +6,7 @@
 - computer vision for Baxter (Alvar)
 - collection of demo scripts mounted under ~/rosie/moveit on blue-mir100 branch
 
-(Recommended branch: blue-mir100)
+(Branch: blue-mir100)
 
 ## Prerequisites:
 - docker-ce
