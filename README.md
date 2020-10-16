@@ -47,17 +47,17 @@ You may need to run the gazebo client manually in the master container if it doe
 Scanning Baxter (gazebo container):
 		
 	docker exec -it gazebo bash
-	DISPLAY=novnc:0 gzclient 		      (view the simulated world)
+	DISPLAY=novnc:0 gzclient 	   (view the simulated world)
 
 	docker exec -it gazebo bash
-	DISPLAY=novnc:0 rviz 			        (see Baxters view of the world)
+	DISPLAY=novnc:0 rviz 		   (see Baxters view of the world)
 
 	docker exec -it gazebo bash
-	cd moveit && source ./init 		    (startup the moveIt framework)
+	cd moveit && source ./init 	   (startup the moveIt framework)
 
-	./set_arms_to_scan.py	init        (on start up only: moves left arm out of the way and opens grippers)
-	./set_arms_to_scan.py yaw    	    (set scanning arm to ideal position)
-	./spawnstack 		                  (uncomment only yaw instructions before execution)
+	./set_arms_to_scan.py	init       (on start up only: moves left arm out of the way and opens grippers)
+	./set_arms_to_scan.py yaw    	   (set scanning arm to ideal position)
+	./spawnstack 		           (uncomment only yaw instructions before execution)
 	./blockstack_alvar_demo.py primary (scans blocks and publishes result)
 
 
