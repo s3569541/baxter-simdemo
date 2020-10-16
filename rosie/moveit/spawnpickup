@@ -18,7 +18,7 @@ delete_model table
 
 rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markertable/model.sdf -model table -x 1.1 -y 0.0 -z 0.0
 
-# small blocks
+# ideal for stacking algorithm in block_stack_alvar_demo.py
 rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_1/model.sdf -model marker1 -x 0.55 -y 0.25 -z 0.75 # -Y 0.5 -P -0.0 -R -0.0
 rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_2/model.sdf -model marker2 -x 0.55 -y 0.15 -z 0.75 # -Y 0.7 -P -0.0 -R -0.0
 rosrun gazebo_ros spawn_model -sdf -file ~/rosie/markerblock_3/model.sdf -model marker3 -x 0.65 -y 0.25 -z 0.75 # -Y 0.3 -P -0.0 -R -0.0

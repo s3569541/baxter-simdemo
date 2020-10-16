@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 
-# https://github.com/ros-planning/moveit_tutorials/blob/kinetic-devel/doc/move_group_python_interface/scripts/move_group_python_interface_tutorial.py
-# https://github.com/ravijo/baxter_moveit_tutorial/blob/master/scripts/example.py
-
-# Steps to run this code
-# 1) roslaunch baxter_moveit_tutorial moveit_init.launch
-# 2) rosrun baxter_moveit_tutorial example.py
 import sys
 import copy
 import rospy
@@ -62,6 +56,7 @@ global robot
 global lgripper
 global rgripper
 global display_trajectory_publisher
+
 
 def init():
     global robot
