@@ -64,20 +64,20 @@ Scanning Baxter (gazebo container):
 Stacking Baxter (gazebo2 container):
 
 	docker exec -it gazebo2 bash
-	DISPLAY=novnc:0 gzclient 		      (view the simulated world)
+	DISPLAY=novnc:0 gzclient 	  (view the simulated world)
 
 	docker exec -it gazebo2 bash
-	DISPLAY=novnc:0 rviz 			        (see Baxters view of the world)
+	DISPLAY=novnc:0 rviz 		  (see Baxters view of the world)
 
 	docker exec -it gazebo2 bash
-	cd moveit && source ./init		    (startup the moveIt framework)
-	../twin-relay 			              (communication from gazebo to gazebo2)
+	cd moveit && source ./init	  (startup the moveIt framework)
+	../twin-relay 			  (communication from gazebo to gazebo2)
 
 	docker exec -it gazebo2 bash
-	cd moveit && source ./init 		    (startup the moveIt framework)
-	./set_arms_to_scan.py 		        (on start up only: moves right arm out of the way)
-	./spawnpickup 				            (sets pickup blocks to ideal position)
-	./blockstack_alvar_demo.py stack 	(stacks blocks based on received data)
+	cd moveit && source ./init 	  (startup the moveIt framework)
+	./set_arms_to_scan.py 		  (on start up only: moves right arm out of the way)
+	./spawnpickup 		          (sets pickup blocks to ideal position)
+	./blockstack_alvar_demo.py stack  (stacks blocks based on received data)
 	
 
 When finished: 
