@@ -2,6 +2,7 @@
 ## ROS Simulation for two Baxter's in two VXLab
 
 ## Features:
+- Video demonstration available: https://youtu.be/O3mMtT-RYps
 - Communication from a scanning Baxter to a stacking Baxter for a set of ALVAR marker blocks using ROS Topics
 - Computer vision for Baxter (Alvar)
 - Collection of demo scripts mounted under ~/rosie/moveit on blue-mir100 branch
