@@ -3,6 +3,7 @@
 
 ## Features:
 - Video demonstration available: https://youtu.be/O3mMtT-RYps
+- Finate report on project available in the root directory of this repository: ~/robocostack-final-report.pdf
 - Communication from a scanning Baxter to a stacking Baxter for a set of ALVAR marker blocks using ROS Topics
 - Computer vision for Baxter (Alvar)
 - Collection of demo scripts mounted under ~/rosie/moveit on blue-mir100 branch
