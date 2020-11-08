@@ -1,5 +1,5 @@
 # baxter-mobility-base-simdemo (blue-mir100 branch)
-## ROS Simulation for two Baxter's in two VXLab
+## ROS Simulation for two Baxters in two VXLabs
 
 ## Features:
 - Video demonstration available: https://youtu.be/O3mMtT-RYps
